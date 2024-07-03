@@ -7,7 +7,7 @@ import AppdataSource from "./Database/data-source";
 const server = express();
 server.use(loggerMiddleware);
 server.use(express.json());
-server.use("/employees", employeeRouter);
+server.use("/employee", employeeRouter);
 
 server.get("/", (req: Request, res: Response) => {
 	console.log(req.url);

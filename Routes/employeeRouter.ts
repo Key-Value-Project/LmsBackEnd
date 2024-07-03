@@ -17,9 +17,7 @@ employeeRouter.get("/", async (req: Request, res: Response) => {
 employeeRouter.get("/:id", async (req: Request, res: Response) => {
 	const { id } = req.params;
 	const employeeRepositry = AppdataSource.getRepository(Employee);
-	const employee = await employeeRepositry.findOne({
-		where: { id: Number(id) },
-	});
+	const employee = await employeeRepositry.findOneBy({ id: Number(id) });
 	res.status(200).send(employee);
 });
 
