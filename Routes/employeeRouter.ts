@@ -22,12 +22,23 @@ employeeRouter.get("/:id", async (req: Request, res: Response) => {
 });
 
 employeeRouter.post("/", async (req: Request, res: Response) => {
-	const employee = new Employee();
-	const employeeRepositry = AppdataSource.getRepository(Employee);
-	employee.name = req.body.name;
-	employee.email = req.body.email;
-	const response = await employeeRepositry.save(employee);
-	res.status(201).send(`Employee created with id -> ${response.id} \n ${response}`);
+	const queryRunner = AppdataSource.createQueryRunner();
+	await queryRunner.connect();
+	await queryRunner.startTransaction();
+	try {
+		const employee = new Employee();
+		// const employeeRepositry = AppdataSource.getRepository(Employee);
+		employee.name = req.body.name;
+		employee.email = req.body.email;
+		const response = await queryRunner.manager.save(employee);
+		await queryRunner.commitTransaction();
+		res.status(201).send(`Employee created with id -> ${response.id} \n ${response}`);
+	} catch (e) {
+		await queryRunner.rollbackTransaction();
+		res.status(500).send(e);
+	} finally {
+		await queryRunner.release();
+	}
 });
 
 employeeRouter.put("/:id", async (req: Request, res: Response) => {
