@@ -39,14 +39,14 @@ employeeRouter.put("/:id", async (req: Request, res: Response) => {
 	employee.name = req.body.name;
 	employee.email = req.body.email;
 	const response = await employeeRepositry.save(employee);
-	res.status(201).send(`Updated employee info with id -> ${id} \n ${response}`);
+	res.status(201).send(response);
 });
 
 employeeRouter.delete("/:id", async (req: Request, res: Response) => {
 	const { id } = req.params;
 	const employeeRepositry = AppdataSource.getRepository(Employee);
-	const response = await employeeRepositry.delete({ id: Number(id) });
-	res.status(200).send(`Employee with id -> ${id} deleted \n ${response}`);
+	const response = await employeeRepositry.softDelete({ id: Number(id) });
+	res.status(200).send(response);
 });
 
 export default employeeRouter;
