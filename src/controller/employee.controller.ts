@@ -3,11 +3,9 @@ import express from "express";
 import { Request, Response } from "express";
 
 class EmployeeController {
-	private employeeService: EmployeeService;
 	public router: express.Router;
 
-	constructor() {
-		this.employeeService = new EmployeeService();
+	constructor(private employeeService: EmployeeService) {
 		this.router = express.Router();
 
 		this.router.get("/", this.getAllEmployees);

@@ -3,9 +3,7 @@ import EmployeeRepository from "../repository/employee.repository";
 
 // Bussiness Logic
 class EmployeeService {
-	private employeeRepository: EmployeeRepository;
-	constructor() {
-		this.employeeRepository = new EmployeeRepository();
+	constructor(private employeeRepository: EmployeeRepository) {
 	}
 
 	getAllEmployees = async (): Promise<Employee[]> => {
