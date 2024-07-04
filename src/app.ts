@@ -1,18 +1,13 @@
 import express from "express";
-import { Request, Response } from "express";
-import loggerMiddleware from "./Middleware/loggerMiddleware";
-import employeeRouter from "./Routes/employeeRouter";
-import AppdataSource from "./Database/data-source";
+import loggerMiddleware from "./middleware/logger.middleware";
+import employeeRouter from "./routes/employee.routes";
+import AppdataSource from "./db/data-source";
+
 
 const server = express();
 server.use(loggerMiddleware);
 server.use(express.json());
 server.use("/employee", employeeRouter);
-
-server.get("/", (req: Request, res: Response) => {
-	console.log(req.url);
-	res.status(200).send(" Root URL ");
-});
 
 (async () => {
 	try {

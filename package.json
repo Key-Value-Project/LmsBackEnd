@@ -1,15 +1,14 @@
 {
 	"name": "backend",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"description": "keyvalue-training",
-	"main": "dist/app.js",
+	"main": "app.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"info": "echo keyvalue training project using node + express",
-		"start": "node dist/app.js",
-		"dev": "nodemon app.js",
+		"info": "echo keyvalue training project using node + express + postgres",
+		"start": "node dist/src/app.js",
+		"dev": "nodemon dist/src/app.js",
 		"build": "rm -rf dist/ && npx tsc",
-		"stage": "npm run build && npm run start"
+		"start-server": "npm run build && npm run start"
 	},
 	"author": "shaheen",
 	"license": "ISC",
