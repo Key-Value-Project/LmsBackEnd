@@ -8,6 +8,7 @@ import { CreateEmployeeDto } from "../dto/employee.dto";
 import { validate } from "class-validator";
 import Role from "../utils/role.enum";
 import authorize from "../middleware/auth.middleware";
+import extractValidationErrors from "../utils/extractValidationErrors";
 
 class EmployeeController {
 	public router: express.Router;
@@ -72,7 +73,9 @@ class EmployeeController {
 			const employeeDto = plainToInstance(CreateEmployeeDto, req.body);
 			const errors = await validate(employeeDto);
 			if (errors.length) {
-				throw new HttpException(400, "Validation failed", errors);
+				// console.log(errors);
+				const error_list = extractValidationErrors(errors);
+				throw new HttpException(400, "Validation failed", error_list);
 			}
 
 			const savedEmployee = await this.employeeService.createEmployee(employeeDto);
