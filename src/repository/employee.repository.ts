@@ -1,5 +1,5 @@
 import { DataSource, Repository } from "typeorm";
-import AppdataSource from "../db/data-source";
+// import AppdataSource from "../db/data-source";
 import Employee from "../entity/employee.entity";
 
 // DB Calls
@@ -16,7 +16,7 @@ class EmployeeRepository {
 
 	findOne = async (filter: Partial<Employee>): Promise<Employee | null> => {
 		// const employeeRepositry = this.dataSource.getRepository(Employee);
-		return this.employeeRepositry.findOne({ where: filter });
+		return this.employeeRepositry.findOne({ where: filter, relations: ["address"] });
 	};
 
 	save = async (employee: Employee): Promise<Employee> => {
@@ -27,7 +27,7 @@ class EmployeeRepository {
 	// saveWithTransaction = async (employee: Employee): Promise<Employee> => {
 	// 	const queryRunner = this.dataSource.createQueryRunner();
 	// 	await queryRunner.connect();
-	// 	await queryRunner.startTransaction();
+	// 	await queryRunner.startTransaction();line1
 	// 	try {
 	// 		const employeeRepositry = this.dataSource.getRepository(Employee);
 	// 		const response = await queryRunner.manager.save(employee);
@@ -44,6 +44,11 @@ class EmployeeRepository {
 	softDelete = async (id: number): Promise<void> => {
 		// const employeeRepositry = this.dataSource.getRepository(Employee);
 		await this.employeeRepositry.softDelete({ id });
+	};
+
+	softRemove = async (id: number): Promise<void> => {
+		const employee = await this.findOne({ id });
+		await this.employeeRepositry.softRemove(employee);
 	};
 }
 
