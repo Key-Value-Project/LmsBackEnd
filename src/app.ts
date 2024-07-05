@@ -3,7 +3,6 @@ import loggerMiddleware from "./middleware/logger.middleware";
 import employeeRouter from "./routes/employee.routes";
 import AppdataSource from "./db/data-source";
 import errorMiddleware from "./middleware/error.middleware";
-import authorize from "./middleware/auth.middleware";
 
 const server = express();
 server.use(loggerMiddleware);

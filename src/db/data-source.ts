@@ -1,16 +1,15 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
-import Employee from "../entity/employee.entity";
-import Address from "../entity/address.entity";
+import "dotenv/config";
 
 const AppdataSource = new DataSource({
 	type: "postgres",
-	host: "localhost",
-	port: 5434,
-	database: "training",
-	username: "shaheen",
-	password: "keyvalue",
+	host: process.env.DB_HOST,
+	port: Number(process.env.DB_PORT),
+	database: process.env.DB_NAME,
+	username: process.env.DB_USER,
+	password: process.env.DB_PASSWORD,
 	extra: { max: 5, min: 2 }, // connection pool to reduce load
 	synchronize: false, // true for development, false for production
 	logging: true,

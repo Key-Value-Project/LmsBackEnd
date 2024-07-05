@@ -1,4 +1,3 @@
-import { getRepository } from "typeorm";
 import EmployeeRepository from "../../src/repository/employee.repository";
 import Employee from "../../src/entity/employee.entity";
 import EmployeeService from "../../src/service/employee.service";
