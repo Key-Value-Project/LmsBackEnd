@@ -3,11 +3,13 @@ import loggerMiddleware from "./middleware/logger.middleware";
 import employeeRouter from "./routes/employee.routes";
 import AppdataSource from "./db/data-source";
 import errorMiddleware from "./middleware/error.middleware";
+import departmentRouter from "./routes/department.routes";
 
 const server = express();
 server.use(loggerMiddleware);
 server.use(express.json());
 server.use("/employee", employeeRouter);
+server.use("/department", departmentRouter);
 
 server.get("/", (req, res) => {
 	res.send("Hello World");

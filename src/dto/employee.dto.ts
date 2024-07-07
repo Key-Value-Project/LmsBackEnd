@@ -3,6 +3,7 @@ import 'reflect-metadata'
 import { CreateAddressDto } from "./address.dto";
 import { Type } from "class-transformer";
 import Role from "../utils/role.enum";
+import { CreateDepartmentDto } from "./department.dto";
 
 export class CreateEmployeeDto {
     @IsNotEmpty()
@@ -22,6 +23,11 @@ export class CreateEmployeeDto {
     @ValidateNested({ each: true })
     @Type(()=> CreateAddressDto)
     address: CreateAddressDto
+
+    @IsNotEmpty()
+    @ValidateNested({ each: true })
+    @Type(() => CreateDepartmentDto)
+    department?: CreateDepartmentDto
     
     @IsNotEmpty()
     @IsString()
@@ -30,6 +36,8 @@ export class CreateEmployeeDto {
     @IsNotEmpty()
     @IsEnum(Role)
     role: Role;
+
+
 }
 
 export class UpdateEmployeeDto {
@@ -50,6 +58,11 @@ export class UpdateEmployeeDto {
     @ValidateNested({ each: true })
     @Type(()=> CreateAddressDto)
     address: CreateAddressDto
+
+    @IsNotEmpty()
+    @ValidateNested({ each: true })
+    @Type(() => CreateDepartmentDto)
+    department: CreateDepartmentDto
 
     @IsNotEmpty()
     @IsEnum(Role)

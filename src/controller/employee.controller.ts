@@ -82,7 +82,7 @@ class EmployeeController {
 
 			const savedEmployee = await this.employeeService.createEmployee(employeeDto);
 			if (!savedEmployee) {
-				throw new HttpException(500, "Employee not created");
+				throw new HttpException(500, "Internal Server Error" , ["Employee not created"])
 			}
 			res.status(201).send(savedEmployee);
 		} catch (err) {

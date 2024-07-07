@@ -7,6 +7,7 @@ import HttpException from "../execptions/http.exceptions";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "../utils/jwtPayload";
 import "dotenv/config";
+import Department from "../entity/department.entity";
 
 // Bussiness Logic
 class EmployeeService {
@@ -53,6 +54,11 @@ class EmployeeService {
 		new_address.line1 = employee.address.line1;
 		new_address.pincode = employee.address.pincode;
 		new_employee.address = new_address;
+
+		// const new_department = new Department();
+		// new_department.name = employee.department?.name;
+		// new_department.description = employee.department?.description;
+		// new_employee.department = new_department;
 
 		new_employee.password = employee.password ? await bcrypt.hash(employee.password, 10) : null;
 		new_employee.role = employee.role;

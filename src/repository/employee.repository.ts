@@ -11,12 +11,12 @@ class EmployeeRepository {
 
 	findAll = async (): Promise<Employee[]> => {
 		// const employeeRepositry = this.dataSource.getRepository(Employee);
-		const list_of_employees = await this.employeeRepositry.find({ relations: ["address"] });
+		const list_of_employees = await this.employeeRepositry.find({ relations: ["address", "department"] });
 		return list_of_employees;
 	};
 
 	findOne = async (filter: Partial<Employee>): Promise<Employee | null> => {
-		return this.employeeRepositry.findOne({ where: filter, relations: ["address"] });
+		return this.employeeRepositry.findOne({ where: filter, relations: ["address", "department"] });
 	};
 
 	save = async (employee: Employee): Promise<Employee> => {
