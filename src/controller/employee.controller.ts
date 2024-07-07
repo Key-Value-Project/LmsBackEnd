@@ -4,12 +4,13 @@ import { Request, Response, NextFunction } from "express";
 import { RequestWithUser } from "../utils/requestWithUser";
 import HttpException from "../execptions/http.exceptions";
 import { plainToInstance } from "class-transformer";
-import { CreateEmployeeDto } from "../dto/employee.dto";
+import { CreateEmployeeDto, UpdateEmployeeDto } from "../dto/employee.dto";
 import { validate } from "class-validator";
 import Role from "../utils/role.enum";
 import authorize from "../middleware/auth.middleware";
 import extractValidationErrors from "../utils/extractValidationErrors";
 
+// API Calls
 class EmployeeController {
 	public router: express.Router;
 
@@ -21,6 +22,7 @@ class EmployeeController {
 		this.router.post("/", authorize, this.createEmployee);
 		this.router.delete("/:id", this.deleteEmployee);
 		this.router.post("/login", this.loginEmployee);
+		this.router.put("/:id", this.updateEmployee);
 	}
 
 	public loginEmployee = async (req: Request, res: Response, next: NextFunction) => {
@@ -100,6 +102,31 @@ class EmployeeController {
 				]);
 				next(error);
 			}
+		}
+	};
+
+	public updateEmployee = async (req: Request, res: Response, next: NextFunction) => {
+		const { id } = req.params;
+		console.log(req.body);
+		const updateEmployeeDto = plainToInstance(UpdateEmployeeDto, req.body);
+		console.log("employeeDto", updateEmployeeDto)
+		// const errors = await validate(updateEmployeeDto);
+		// if (errors.length) {
+		// 	console.log(errors);
+		// 	const error_list = extractValidationErrors(errors);
+		// 	throw new HttpException(400, "Validation failed", error_list);
+		// }
+
+		try {
+			const updatedEmployee = await this.employeeService.updateEmployee(Number(id), updateEmployeeDto);
+			if (!updatedEmployee) {
+				throw new HttpException(404, "Record not found", [
+					"Employee not found in the database for the given id",
+				]);
+			}
+			res.status(200).send(updatedEmployee);
+		} catch (err) {
+			next(err);
 		}
 	};
 }

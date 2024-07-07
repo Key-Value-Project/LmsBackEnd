@@ -1,4 +1,4 @@
-import { CreateEmployeeDto } from "../dto/employee.dto";
+import { CreateEmployeeDto, UpdateEmployeeDto } from "../dto/employee.dto";
 import Address from "../entity/address.entity";
 import Employee from "../entity/employee.entity";
 import EmployeeRepository from "../repository/employee.repository";
@@ -27,7 +27,7 @@ class EmployeeService {
 			email: employee.email,
 			role: employee.role,
 		};
-		
+
 		const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY });
 		// console.log(token);
 
@@ -35,7 +35,8 @@ class EmployeeService {
 	};
 
 	getAllEmployees = async (): Promise<Employee[]> => {
-		return this.employeeRepository.findAll();
+		const allEmployess = await this.employeeRepository.findAll();
+		return allEmployess;
 	};
 
 	getEmployeeById = async (id: number): Promise<Employee | null> => {
@@ -60,6 +61,20 @@ class EmployeeService {
 
 	deleteEmployee = async (id: number): Promise<void> => {
 		await this.employeeRepository.softRemove(id);
+	};
+
+	updateEmployee = async (id: number, employee: UpdateEmployeeDto): Promise<Employee | null> => {
+		const new_employee = new Employee();
+		new_employee.name = employee.name;
+		new_employee.email = employee.email;
+		new_employee.age = employee.age;
+
+		const new_address = new Address();
+		new_address.line1 = employee.address.line1;
+		new_address.pincode = employee.address.pincode;
+		new_employee.address = new_address;
+		new_employee.role = employee.role;
+		return this.employeeRepository.update(id, new_employee);
 	};
 }
 

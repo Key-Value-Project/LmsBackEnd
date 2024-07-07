@@ -11,16 +11,15 @@ class EmployeeRepository {
 
 	findAll = async (): Promise<Employee[]> => {
 		// const employeeRepositry = this.dataSource.getRepository(Employee);
-		return this.employeeRepositry.find();
+		const list_of_employees = await this.employeeRepositry.find({ relations: ["address"] });
+		return list_of_employees;
 	};
 
 	findOne = async (filter: Partial<Employee>): Promise<Employee | null> => {
-		// const employeeRepositry = this.dataSource.getRepository(Employee);
 		return this.employeeRepositry.findOne({ where: filter, relations: ["address"] });
 	};
 
 	save = async (employee: Employee): Promise<Employee> => {
-		// const employeeRepositry = this.dataSource.getRepository(Employee);
 		return this.employeeRepositry.save(employee);
 	};
 
@@ -42,13 +41,18 @@ class EmployeeRepository {
 	// };
 
 	softDelete = async (id: number): Promise<void> => {
-		// const employeeRepositry = this.dataSource.getRepository(Employee);
 		await this.employeeRepositry.softDelete({ id });
 	};
 
 	softRemove = async (id: number): Promise<void> => {
 		const employee = await this.findOne({ id });
 		await this.employeeRepositry.softRemove(employee);
+	};
+
+	update = async (id: number, employee: Employee): Promise<Employee> => {
+		console.log("EmployeeRepository -> update -> employee", employee);
+		await this.employeeRepositry.update({ id }, employee);
+		return this.findOne({ id });
 	};
 }
 

@@ -1,3 +1,5 @@
+import Employee from "../entity/employee.entity";
+import Address from "../entity/address.entity";
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
@@ -14,8 +16,8 @@ const AppdataSource = new DataSource({
 	synchronize: false, // true for development, false for production
 	logging: true,
 	namingStrategy: new SnakeNamingStrategy(), // EmployeeSalary -> employee_salary
-	entities: ["dist/entity/*.js"],
-	migrations: ["dist/db/migrations/*.js"],
+	entities: ["dist/src/entity/*.js"],
+	migrations: ["dist/src/db/migrations/*.js"],
 });
 
 export default AppdataSource;
