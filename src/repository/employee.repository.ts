@@ -46,7 +46,12 @@ class EmployeeRepository {
 
 	softRemove = async (id: number): Promise<void> => {
 		const employee = await this.findOne({ id });
-		await this.employeeRepositry.softRemove(employee);
+		if (employee) {
+			// Update the email to a new random value
+			employee.email = `deleted_${Date.now()}_${employee.email}`;
+			await this.save(employee); // Save the updated employee
+			await this.employeeRepositry.softRemove(employee); // Then soft-remove it
+		}
 	};
 
 	update = async (id: number, employee: Employee): Promise<Employee> => {

@@ -89,6 +89,10 @@ class EmployeeController {
 			}
 			res.status(201).send(savedEmployee);
 		} catch (err) {
+			if (err.code === "23505") {
+				const error = new HttpException(400, "Bad request", ["Email already exists"]);
+				next(error);
+			}
 			next(err);
 		}
 	};

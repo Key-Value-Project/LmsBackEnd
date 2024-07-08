@@ -16,10 +16,12 @@ class EmployeeService {
 
 	login = async (email: string, password: string) => {
 		const employee = await this.employeeRepository.findOne({ email });
+		console.log(employee);
 		if (!employee) {
 			throw new HttpException(401, "Unauthorized", ["Invalid email or password"]);
 		}
 		const isValidPassword = await bcrypt.compare(password, employee.password);
+		console.log(isValidPassword);
 		if (!isValidPassword) {
 			throw new HttpException(401, "Unauthorized", ["Invalid email or password"]);
 		}
@@ -31,7 +33,7 @@ class EmployeeService {
 		};
 
 		const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY });
-		// console.log(token);
+		console.log(token);
 
 		return { token };
 	};
@@ -45,9 +47,8 @@ class EmployeeService {
 		return this.employeeRepository.findOne({ id });
 	};
 
-	createEmployee = async (employee: CreateEmployeeDto,): Promise<Employee> => {
+	createEmployee = async (employee: CreateEmployeeDto): Promise<Employee> => {
 		const departmentData: Department = await this.departmentService.getDepartment(employee.department.name);
-		console.log(departmentData);
 		if (!departmentData) {
 			throw new HttpException(404, "Not found", ["Department not found in the database"]);
 		}
@@ -64,7 +65,7 @@ class EmployeeService {
 
 		new_employee.password = employee.password ? await bcrypt.hash(employee.password, 10) : null;
 		new_employee.role = employee.role;
-		console.log(new_employee);
+
 		return this.employeeRepository.save(new_employee);
 	};
 
@@ -84,7 +85,10 @@ class EmployeeService {
 		return this.employeeRepository.update(id, new_employee);
 	};
 
-	updateEmployeeRelationship = async (id: number, employee: updateEmployeeRelationshipDto): Promise<Employee | null> => {
+	updateEmployeeRelationship = async (
+		id: number,
+		employee: updateEmployeeRelationshipDto
+	): Promise<Employee | null> => {
 		const new_employee = new Employee();
 		const new_address = new Address();
 		new_address.line1 = employee.address.line1;
@@ -96,6 +100,7 @@ class EmployeeService {
 			throw new HttpException(404, "Not found", ["Department not found in the database"]);
 		}
 		new_employee.department = new_department;
+		// remove password from the response
 		return this.employeeRepository.saveRelationship(id, new_employee);
 	};
 }

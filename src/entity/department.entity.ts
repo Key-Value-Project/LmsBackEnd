@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, Unique } from "typeorm";
+import { Column, Entity, Index, OneToMany, Unique } from "typeorm";
 import AbstractEntity from "./abstract-entity";
 import Employee from "./employee.entity";
 
@@ -7,7 +7,7 @@ import Employee from "./employee.entity";
 class Department extends AbstractEntity {
 
     @Column()
-    @Unique(["name"])
+    @Index({ unique: true, where: "deleted_at IS NULL" })
     name: string;
 
     @Column()

@@ -6,7 +6,7 @@ import { when } from "jest-when";
 import Address from "../../src/entity/address.entity";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { CreateEmployeeDto } from "../../src/dto/employee.dto";
+import { CreateEmployeeDto, UpdateEmployeeDto } from "../../src/dto/employee.dto";
 import DepartmentRepository from "../../src/repository/department.repository";
 import Department from "../../src/entity/department.entity";
 import DepartmentService from "../../src/service/department.service";
@@ -34,7 +34,7 @@ describe("EmployeeService", () => {
 	const list_employee: Employee[] = [
 		{ ...mockEmployee, id: 10, name: "jonny4", role: Role.DEVELOPER },
 		{ ...mockEmployee, id: 12, name: "jonny2", role: Role.TESTER },
-		{ ...mockEmployee, id: 3, name: "jonny3", role: Role.HR},
+		{ ...mockEmployee, id: 3, name: "jonny3", role: Role.HR },
 	];
 
 	beforeAll(() => {
@@ -74,23 +74,35 @@ describe("EmployeeService", () => {
 
 	it("should return a token for valid credentials", async () => {
 		jest.spyOn(employeeRepository, "findOne").mockResolvedValue(mockEmployee);
-		jest.spyOn(bcrypt, "compare").mockResolvedValue(true as never);
-		jest.spyOn(jwt, "sign").mockReturnValue("validToken" as never);
+		const mockVerify = jest.fn();
+		when(mockVerify).calledWith("password", "hashed_password").mockResolvedValue(true);
+		bcrypt.compare = mockVerify;
+
+		const mockSign = jest.fn();
+		when(mockSign)
+			.calledWith(expect.any(Object), process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY })
+			.mockReturnValue("validToken");
+		jwt.sign = mockSign;
+
 		const result = await employeeService.login("test@example.com", "password");
 		expect(result).toHaveProperty("token", "validToken");
 	});
 
 	it("should throw Unauthorized for invalid email", async () => {
-		jest.spyOn(employeeRepository, "findOne").mockResolvedValue(null);
+		const mock = jest.fn();
+		when(mock).calledWith("invalid@gmail.com").mockResolvedValue(undefined);
+		employeeRepository.findOne = mock;
 
 		await expect(employeeService.login("invalid@example.com", "password")).rejects.toThrow("Unauthorized");
 	});
 
 	it("should throw Unauthorized for invalid password", async () => {
 		jest.spyOn(employeeRepository, "findOne").mockResolvedValue(mockEmployee);
-		jest.spyOn(bcrypt, "compare").mockResolvedValue(false as never);
+		const mockVerify = jest.fn();
+		when(mockVerify).calledWith("password_wrong", "hashed_password").mockResolvedValue(false);
+		bcrypt.compare = mockVerify;
 
-		await expect(employeeService.login("invalid@example.com", "password")).rejects.toThrow("Unauthorized");
+		await expect(employeeService.login("valid@example.com", "password_wrong")).rejects.toThrow("Unauthorized");
 	});
 
 	it("should call delete method", async () => {
@@ -133,9 +145,54 @@ describe("EmployeeService", () => {
 
 		const employee = await employeeService.createEmployee(createEmployeeDto);
 		expect(employee).toEqual(mockEmployee);
-		console.log("inside test -> ",mockEmployee);
 		expect(employeeRepository.save).toHaveBeenCalledTimes(1);
 		expect(bcrypt.hash).toHaveBeenCalledWith("password123", 10);
+	});
 
+	it("should update an employee", async () => {
+		const updateEmployeeDto: UpdateEmployeeDto = {
+			name: "Jonny1",
+			email: "bakka123@gmail.com",
+			age: 13,
+			password: "password123",
+			role: Role.DEVELOPER,
+		};
+		const mock = jest.fn();
+		when(mock).calledWith(8, expect.any(Employee)).mockResolvedValue(mockEmployee);
+		employeeRepository.update = mock;
+
+		const mockHash = jest.fn();
+		when(mockHash).calledWith("password123", 10).mockResolvedValue("hashed_password");
+		bcrypt.hash = mockHash;
+
+		const employee = await employeeService.updateEmployee(8, updateEmployeeDto);
+		expect(employee).toEqual(mockEmployee);
+		expect(employeeRepository.update).toHaveBeenCalledTimes(1);
+		expect(bcrypt.hash).toHaveBeenCalledWith("password123", 10);
+	});
+
+	it("should update an employee relationship", async () => {
+		const updateEmployeeRelationshipDto = {
+			address: {
+				line1: "line1",
+				pincode: "454545",
+			},
+			department: {
+				name: "HR",
+			},
+		};
+		const department = new Department();
+		department.id = 1;
+		department.name = "HR";
+		department.description = "Human akaa Resource";
+		jest.spyOn(departmentService, "getDepartment").mockResolvedValue(department);
+
+		const mock = jest.fn();
+		when(mock).calledWith(8, expect.any(Employee)).mockResolvedValue(mockEmployee);
+		employeeRepository.saveRelationship = mock;
+
+		const employee = await employeeService.updateEmployeeRelationship(8, updateEmployeeRelationshipDto);
+		expect(employee).toEqual(mockEmployee);
+		expect(employeeRepository.saveRelationship).toHaveBeenCalledTimes(1);
 	});
 });

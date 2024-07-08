@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, Index, ManyToOne, OneToOne, Unique } from "typeorm";
 import AbstractEntity from "./abstract-entity";
 import Address from "./address.entity";
 import Role from "../utils/role.enum";
@@ -11,6 +11,7 @@ class Employee extends AbstractEntity {
 	name: string;
 
 	@Column()
+	@Index({ unique: true, where: "deleted_at IS NULL" })
 	email: string;
 
 	@Column()

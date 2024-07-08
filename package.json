@@ -5,7 +5,7 @@
 	"main": "app.js",
 	"scripts": {
 		"info": "echo keyvalue training project using node + express + postgres",
-		"test": "jest",
+		"test": "jest --verbose",
 		"test-coverage": "jest --coverage",
 		"start": "node dist/src/app.js",
 		"dev": "nodemon dist/src/app.js",
@@ -44,6 +44,9 @@
 		"typescript": "^5.5.3"
 	},
 	"jest": {
+		"testMatch": [
+			"**/*.test.ts"
+		],
 		"transform": {
 			"^.+\\.(t)s$": "ts-jest"
 		},
