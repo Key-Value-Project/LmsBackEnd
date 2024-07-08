@@ -1,4 +1,4 @@
-import { CreateEmployeeDto, UpdateEmployeeDto } from "../dto/employee.dto";
+import { CreateEmployeeDto, UpdateEmployeeDto, updateEmployeeRelationshipDto } from "../dto/employee.dto";
 import Address from "../entity/address.entity";
 import Employee from "../entity/employee.entity";
 import EmployeeRepository from "../repository/employee.repository";
@@ -8,10 +8,11 @@ import jwt from "jsonwebtoken";
 import { JwtPayload } from "../utils/jwtPayload";
 import "dotenv/config";
 import Department from "../entity/department.entity";
+import DepartmentService from "./department.service";
 
 // Bussiness Logic
 class EmployeeService {
-	constructor(private employeeRepository: EmployeeRepository) {}
+	constructor(private employeeRepository: EmployeeRepository, private departmentService: DepartmentService) {}
 
 	login = async (email: string, password: string) => {
 		const employee = await this.employeeRepository.findOne({ email });
@@ -44,7 +45,12 @@ class EmployeeService {
 		return this.employeeRepository.findOne({ id });
 	};
 
-	createEmployee = async (employee: CreateEmployeeDto): Promise<Employee> => {
+	createEmployee = async (employee: CreateEmployeeDto,): Promise<Employee> => {
+		const departmentData: Department = await this.departmentService.getDepartment(employee.department.name);
+		console.log(departmentData);
+		if (!departmentData) {
+			throw new HttpException(404, "Not found", ["Department not found in the database"]);
+		}
 		const new_employee = new Employee();
 		new_employee.name = employee.name;
 		new_employee.email = employee.email;
@@ -54,14 +60,11 @@ class EmployeeService {
 		new_address.line1 = employee.address.line1;
 		new_address.pincode = employee.address.pincode;
 		new_employee.address = new_address;
-
-		// const new_department = new Department();
-		// new_department.name = employee.department?.name;
-		// new_department.description = employee.department?.description;
-		// new_employee.department = new_department;
+		new_employee.department = departmentData;
 
 		new_employee.password = employee.password ? await bcrypt.hash(employee.password, 10) : null;
 		new_employee.role = employee.role;
+		console.log(new_employee);
 		return this.employeeRepository.save(new_employee);
 	};
 
@@ -74,13 +77,26 @@ class EmployeeService {
 		new_employee.name = employee.name;
 		new_employee.email = employee.email;
 		new_employee.age = employee.age;
+		// update function cant insert cascaded values like address and department
+		new_employee.role = employee.role;
+		new_employee.password = employee.password ? await bcrypt.hash(employee.password, 10) : null;
 
+		return this.employeeRepository.update(id, new_employee);
+	};
+
+	updateEmployeeRelationship = async (id: number, employee: updateEmployeeRelationshipDto): Promise<Employee | null> => {
+		const new_employee = new Employee();
 		const new_address = new Address();
 		new_address.line1 = employee.address.line1;
 		new_address.pincode = employee.address.pincode;
 		new_employee.address = new_address;
-		new_employee.role = employee.role;
-		return this.employeeRepository.update(id, new_employee);
+
+		const new_department = await this.departmentService.getDepartment(employee.department.name);
+		if (!new_department) {
+			throw new HttpException(404, "Not found", ["Department not found in the database"]);
+		}
+		new_employee.department = new_department;
+		return this.employeeRepository.saveRelationship(id, new_employee);
 	};
 }
 

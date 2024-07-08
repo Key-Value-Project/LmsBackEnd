@@ -11,8 +11,8 @@ class DepartmentService {
 		return allDepartments;
 	};
 
-	getDepartmentEmployees = async (id: number): Promise<Department | null> => {
-		return this.departmentRepository.findOne({ id });
+	getDepartment = async (name: string): Promise<Department | null> => {
+		return this.departmentRepository.findOneDepartment({ name });
 	};
 
 	createDepartment = async (department: CreateDepartmentDto): Promise<Department> => {
@@ -20,6 +20,33 @@ class DepartmentService {
 		new_department.name = department.name;
 		new_department.description = department.description;
 		return this.departmentRepository.save(new_department);
+	};
+
+	getDepartmentEmployees = async (name: string): Promise<Department | null> => {
+		return this.departmentRepository.findOne({ name });
+	};
+
+	deleteDepartment = async (name: string): Promise<Department | null | 0> => {
+		// delete department if no employees are associated with it
+		const department = await this.departmentRepository.findOne({ name });
+		if (!department) {
+			return 0;
+		}
+		if (department.employees.length > 0) {
+			return null;
+		} else {
+			return this.departmentRepository.delete(department);
+		}
+	};
+
+	updateDepartment = async (name: string, department: CreateDepartmentDto): Promise<Department | null> => {
+		const departmentData = await this.departmentRepository.findOneDepartment({ name });
+		if (!departmentData) {
+			return null;
+		}
+		departmentData.name = department.name;
+		departmentData.description = department.description;
+		return this.departmentRepository.save(departmentData);
 	};
 }
 

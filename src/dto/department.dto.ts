@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 import "reflect-metadata";
 
 export class CreateDepartmentDto {
@@ -6,7 +6,7 @@ export class CreateDepartmentDto {
 	@IsString()
 	name: string;
 
-	@IsNotEmpty()
+	@IsOptional()
 	@IsString()
-	description: string;
+	description?: string;
 }

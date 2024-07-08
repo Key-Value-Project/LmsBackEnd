@@ -54,6 +54,15 @@ class EmployeeRepository {
 		await this.employeeRepositry.update({ id }, employee);
 		return this.findOne({ id });
 	};
+
+	saveRelationship = async (id: number, employee: Employee): Promise<Employee> => {
+		const existing_employee = await this.findOne({ id });
+		existing_employee.address.line1 = employee.address.line1;
+		existing_employee.address.pincode = employee.address.pincode;
+		existing_employee.address.updatedAt = new Date();
+		existing_employee.department = employee.department;
+		return this.save(existing_employee);
+	};
 }
 
 export default EmployeeRepository;

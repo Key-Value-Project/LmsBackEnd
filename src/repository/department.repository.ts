@@ -14,8 +14,16 @@ class DepartmentRepository {
 		return this.departmentRepository.findOne({ where: filter, relations: ["employees"] });
 	};
 
+	findOneDepartment = async (filter: Partial<Department>): Promise<Department | null> => {
+		return this.departmentRepository.findOne({ where: filter });
+	};
+
 	save = async (department: Department): Promise<Department> => {
 		return this.departmentRepository.save(department);
+	};
+
+	delete = async (department: Department): Promise<Department> => {
+		return this.departmentRepository.softRemove(department);
 	};
 }
 

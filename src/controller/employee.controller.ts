@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from "express";
 import { RequestWithUser } from "../utils/requestWithUser";
 import HttpException from "../execptions/http.exceptions";
 import { plainToInstance } from "class-transformer";
-import { CreateEmployeeDto, UpdateEmployeeDto } from "../dto/employee.dto";
+import { CreateEmployeeDto, UpdateEmployeeDto, updateEmployeeRelationshipDto } from "../dto/employee.dto";
 import { validate } from "class-validator";
 import Role from "../utils/role.enum";
 import authorize from "../middleware/auth.middleware";
@@ -23,6 +23,7 @@ class EmployeeController {
 		this.router.delete("/:id", this.deleteEmployee);
 		this.router.post("/login", this.loginEmployee);
 		this.router.put("/:id", this.updateEmployee);
+		this.router.patch("/:id", this.updateEmployeeRelationship);
 	}
 
 	public loginEmployee = async (req: Request, res: Response, next: NextFunction) => {
@@ -79,10 +80,12 @@ class EmployeeController {
 				const error_list = extractValidationErrors(errors);
 				throw new HttpException(400, "Validation failed", error_list);
 			}
-
+			if (!employeeDto.department) {
+				throw new HttpException(400, "Bad request", ["Department is required"]);
+			}
 			const savedEmployee = await this.employeeService.createEmployee(employeeDto);
 			if (!savedEmployee) {
-				throw new HttpException(500, "Internal Server Error" , ["Employee not created"])
+				throw new HttpException(500, "Internal Server Error", ["Employee not created"]);
 			}
 			res.status(201).send(savedEmployee);
 		} catch (err) {
@@ -107,23 +110,38 @@ class EmployeeController {
 
 	public updateEmployee = async (req: Request, res: Response, next: NextFunction) => {
 		const { id } = req.params;
-		console.log(req.body);
-		const updateEmployeeDto = plainToInstance(UpdateEmployeeDto, req.body);
-		console.log("employeeDto", updateEmployeeDto)
-		// const errors = await validate(updateEmployeeDto);
-		// if (errors.length) {
-		// 	console.log(errors);
-		// 	const error_list = extractValidationErrors(errors);
-		// 	throw new HttpException(400, "Validation failed", error_list);
-		// }
-
 		try {
+			const updateEmployeeDto = plainToInstance(UpdateEmployeeDto, req.body);
+			const errors = await validate(updateEmployeeDto);
+			if (errors.length) {
+				const error_list = extractValidationErrors(errors);
+				throw new HttpException(400, "Validation failed", error_list);
+			}
+
 			const updatedEmployee = await this.employeeService.updateEmployee(Number(id), updateEmployeeDto);
 			if (!updatedEmployee) {
 				throw new HttpException(404, "Record not found", [
 					"Employee not found in the database for the given id",
 				]);
 			}
+			res.status(200).send(updatedEmployee);
+		} catch (err) {
+			next(err);
+		}
+	};
+
+	public updateEmployeeRelationship = async (req: Request, res: Response, next: NextFunction) => {
+		const { id } = req.params;
+		try {
+			const updateEmployee = plainToInstance(updateEmployeeRelationshipDto, req.body);
+			const updatedEmployee = await this.employeeService.updateEmployeeRelationship(Number(id), updateEmployee);
+			if (!updatedEmployee) {
+				throw new HttpException(404, "Record not found", [
+					"Employee not found in the database for the given id",
+				]);
+			}
+			// remove password from the response
+			delete updatedEmployee.password;
 			res.status(200).send(updatedEmployee);
 		} catch (err) {
 			next(err);
