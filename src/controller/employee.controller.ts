@@ -19,7 +19,7 @@ class EmployeeController {
 
 		this.router.get("/", this.getAllEmployees);
 		this.router.get("/:id", this.getEmployeeById);
-		this.router.post("/", this.createEmployee);
+		this.router.post("/", authorize, this.createEmployee);
 		this.router.delete("/:id", this.deleteEmployee);
 		this.router.post("/login", this.loginEmployee);
 		this.router.put("/:id", this.updateEmployee);
