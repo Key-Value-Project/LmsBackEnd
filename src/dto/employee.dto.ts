@@ -17,7 +17,11 @@ export class CreateEmployeeDto {
 
 	@IsNotEmpty()
 	@IsNumber()
-	age: number;
+	experience: number;
+
+	@IsNotEmpty()
+	@IsString()
+	status: string;
 
 	@IsNotEmpty()
 	@ValidateNested({ each: true })
@@ -50,7 +54,11 @@ export class UpdateEmployeeDto {
 
 	@IsNotEmpty()
 	@IsNumber()
-	age: number;
+	experience: number;
+
+	@IsNotEmpty()
+	@IsString()
+	status: string;
 
 	@IsNotEmpty()
 	@IsString()

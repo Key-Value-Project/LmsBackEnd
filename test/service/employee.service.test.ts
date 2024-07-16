@@ -19,7 +19,8 @@ describe("EmployeeService", () => {
 	// mockEmployee.id = 8;
 	mockEmployee.name = "jonny1";
 	mockEmployee.email = "bakka123@gmail.com";
-	mockEmployee.age = 13;
+	mockEmployee.experience = 13;
+	mockEmployee.status = "Active";
 	const new_employee = new Address();
 	new_employee.line1 = "line1";
 	new_employee.pincode = "454545";
@@ -117,7 +118,8 @@ describe("EmployeeService", () => {
 		const createEmployeeDto: CreateEmployeeDto = {
 			name: "Jonny1",
 			email: "bakka123@gmail.com",
-			age: 13,
+			experience: 13,
+			status: "Active",
 			address: {
 				line1: "line1",
 				pincode: "454545",
@@ -153,7 +155,8 @@ describe("EmployeeService", () => {
 		const updateEmployeeDto: UpdateEmployeeDto = {
 			name: "Jonny1",
 			email: "bakka123@gmail.com",
-			age: 13,
+			experience: 13,
+			status: "Active",
 			password: "password123",
 			role: Role.DEVELOPER,
 		};

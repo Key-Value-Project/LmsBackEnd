@@ -12,7 +12,9 @@ class DepartmentService {
 	};
 
 	getDepartment = async (name: string): Promise<Department | null> => {
-		return this.departmentRepository.findOneDepartment({ name });
+		const temp = await this.departmentRepository.findOneDepartment({ name });
+		console.log(temp);
+		return temp;
 	};
 
 	createDepartment = async (department: CreateDepartmentDto): Promise<Department> => {

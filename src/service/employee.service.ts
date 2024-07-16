@@ -16,12 +16,10 @@ class EmployeeService {
 
 	login = async (email: string, password: string) => {
 		const employee = await this.employeeRepository.findOne({ email });
-		console.log(employee);
 		if (!employee) {
 			throw new HttpException(401, "Unauthorized", ["Invalid email or password"]);
 		}
 		const isValidPassword = await bcrypt.compare(password, employee.password);
-		console.log(isValidPassword);
 		if (!isValidPassword) {
 			throw new HttpException(401, "Unauthorized", ["Invalid email or password"]);
 		}
@@ -33,8 +31,6 @@ class EmployeeService {
 		};
 
 		const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY });
-		console.log(token);
-
 		return { token };
 	};
 
@@ -55,7 +51,8 @@ class EmployeeService {
 		const new_employee = new Employee();
 		new_employee.name = employee.name;
 		new_employee.email = employee.email;
-		new_employee.age = employee.age;
+		new_employee.experience = employee.experience;
+		new_employee.status = employee.status;
 
 		const new_address = new Address();
 		new_address.line1 = employee.address.line1;
@@ -77,7 +74,8 @@ class EmployeeService {
 		const new_employee = new Employee();
 		new_employee.name = employee.name;
 		new_employee.email = employee.email;
-		new_employee.age = employee.age;
+		new_employee.experience = employee.experience;
+		new_employee.status = employee.status;
 		// update function cant insert cascaded values like address and department
 		new_employee.role = employee.role;
 		new_employee.password = employee.password ? await bcrypt.hash(employee.password, 10) : null;

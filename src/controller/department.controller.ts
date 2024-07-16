@@ -16,8 +16,8 @@ class DepartmentController {
 		this.router.get("/", this.getAllDepartments);
 		this.router.get("/:name", this.getDepartmentEmployees);
 		this.router.post("/", this.createDepartment);
-        this.router.delete("/:name", this.deleteDepartment);
-        this.router.put("/:name", this.updateDepartment);
+		this.router.delete("/:name", this.deleteDepartment);
+		this.router.put("/:name", this.updateDepartment);
 	}
 
 	public getAllDepartments = async (req: Request, res: Response, next: NextFunction) => {

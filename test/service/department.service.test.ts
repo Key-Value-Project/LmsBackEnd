@@ -41,7 +41,9 @@ describe("DepartmentService", () => {
 		const mock = jest.fn();
 		when(mock).calledWith("HR").mockResolvedValue(mockDepartment);
 		when(mock).calledWith("IT").mockResolvedValue(null);
-		departmentRepository.findOneDepartment = mock;
+        departmentRepository.findOneDepartment = mock;
+        
+        console.log(mockDepartment);
 
 		const department = await departmentService.getDepartment("HR");
 		expect(department).toEqual(mockDepartment);

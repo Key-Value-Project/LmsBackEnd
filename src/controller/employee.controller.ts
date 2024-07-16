@@ -19,7 +19,7 @@ class EmployeeController {
 
 		this.router.get("/", this.getAllEmployees);
 		this.router.get("/:id", this.getEmployeeById);
-		this.router.post("/", authorize, this.createEmployee);
+		this.router.post("/", this.createEmployee);
 		this.router.delete("/:id", this.deleteEmployee);
 		this.router.post("/login", this.loginEmployee);
 		this.router.put("/:id", this.updateEmployee);
@@ -69,7 +69,7 @@ class EmployeeController {
 	public createEmployee = async (req: RequestWithUser, res: Response, next: NextFunction) => {
 		try {
 			const role = req.role;
-			if (role !== Role.HR) {
+			if (!(role === Role.HR || role === Role.ADMIN)) {
 				throw new HttpException(403, "Forbidden", ["You are not authorized to create an employee"]);
 			}
 
