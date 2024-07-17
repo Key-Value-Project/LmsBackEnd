@@ -24,6 +24,7 @@ const authorize = async (req: RequestWithUser, res: Response, next: NextFunction
 		req.name = (payload as JwtPayload).name;
 		req.email = (payload as JwtPayload).email;
 		req.role = (payload as JwtPayload).role;
+		req.id = (payload as JwtPayload).id;
 
 		return next();
 	} catch (err) {

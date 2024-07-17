@@ -5,4 +5,5 @@ export interface RequestWithUser extends Request {
 	name: string;
 	email: string;
 	role: Role;
+	id: number;
 }

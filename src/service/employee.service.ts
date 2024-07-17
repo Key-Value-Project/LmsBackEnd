@@ -28,6 +28,7 @@ class EmployeeService {
 			name: employee.name,
 			email: employee.email,
 			role: employee.role,
+			id: employee.id,
 		};
 
 		const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY });

@@ -24,6 +24,7 @@ class EmployeeController {
 		this.router.post("/login", this.loginEmployee); // No authorization required here as it is a login route
 		this.router.put("/:id", authorize, this.updateEmployee);
 		this.router.patch("/:id", authorize, this.updateEmployeeRelationship);
+		this.router.get("/me", authorize, this.getUserParams);
 	}
 
 	public loginEmployee = async (req: Request, res: Response, next: NextFunction) => {
@@ -36,6 +37,15 @@ class EmployeeController {
 			res.status(200).json(token);
 		} catch (err) {
 			next(err);
+		}
+	};
+
+	public getUserParams = (req: RequestWithUser, res: Response, next: NextFunction) => {
+		try {
+			const { name, email, role, id } = req;
+			res.status(200).json({ name, email, role, id });
+		} catch (error) {
+			res.status(500).json({ message: "An error occurred while fetching user details." });
 		}
 	};
 
@@ -107,11 +117,14 @@ class EmployeeController {
 			await this.employeeService.deleteEmployee(Number(id));
 			res.status(200).json({ message: `Employee with id: ${id} deleted successfully` });
 		} catch (err) {
-			if (err) {
+			console.log(err);
+			if (err.status !== 403) {
 				const error = new HttpException(404, "Record not found", [
 					"Employee not found in the database for the given id",
 				]);
 				next(error);
+			} else {
+				next(err);
 			}
 		}
 	};
