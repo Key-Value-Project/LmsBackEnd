@@ -91,9 +91,13 @@ class DepartmentController {
 		}
 	};
 
-	public deleteDepartment = async (req: Request, res: Response, next: NextFunction) => {
+	public deleteDepartment = async (req: RequestWithUser, res: Response, next: NextFunction) => {
 		const { name } = req.params;
 		try {
+			const role = req.role;
+			if (!(role === Role.HR || role === Role.ADMIN)) {
+				throw new HttpException(403, "Forbidden", ["You are not authorized to delete an department"]);
+			}
 			// delete only if no employees are associated with the department
 			const result = await this.departmentService.deleteDepartment(name);
 			if (result === 0) {

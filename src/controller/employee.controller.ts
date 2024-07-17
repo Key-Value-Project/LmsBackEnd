@@ -97,9 +97,13 @@ class EmployeeController {
 		}
 	};
 
-	public deleteEmployee = async (req: Request, res: Response, next: NextFunction) => {
+	public deleteEmployee = async (req: RequestWithUser, res: Response, next: NextFunction) => {
 		const { id } = req.params;
 		try {
+			const role = req.role;
+			if (!(role === Role.HR || role === Role.ADMIN)) {
+				throw new HttpException(403, "Forbidden", ["You are not authorized to delete an employee"]);
+			}
 			await this.employeeService.deleteEmployee(Number(id));
 			res.status(200).json({ message: `Employee with id: ${id} deleted successfully` });
 		} catch (err) {
