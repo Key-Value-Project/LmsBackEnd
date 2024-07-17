@@ -17,13 +17,13 @@ class EmployeeController {
 	constructor(private employeeService: EmployeeService) {
 		this.router = express.Router();
 
-		this.router.get("/", this.getAllEmployees);
-		this.router.get("/:id", this.getEmployeeById);
+		this.router.get("/", authorize, this.getAllEmployees);
+		this.router.get("/:id", authorize, this.getEmployeeById);
 		this.router.post("/", authorize, this.createEmployee);
-		this.router.delete("/:id", this.deleteEmployee);
-		this.router.post("/login", this.loginEmployee);
-		this.router.put("/:id", this.updateEmployee);
-		this.router.patch("/:id", this.updateEmployeeRelationship);
+		this.router.delete("/:id", authorize, this.deleteEmployee);
+		this.router.post("/login", this.loginEmployee); // No authorization required here as it is a login route
+		this.router.put("/:id", authorize, this.updateEmployee);
+		this.router.patch("/:id", authorize, this.updateEmployeeRelationship);
 	}
 
 	public loginEmployee = async (req: Request, res: Response, next: NextFunction) => {
@@ -101,7 +101,7 @@ class EmployeeController {
 		const { id } = req.params;
 		try {
 			await this.employeeService.deleteEmployee(Number(id));
-			res.status(200).send(`Employee with id: ${id} deleted successfully`);
+			res.status(200).json({ message: `Employee with id: ${id} deleted successfully` });
 		} catch (err) {
 			if (err) {
 				const error = new HttpException(404, "Record not found", [

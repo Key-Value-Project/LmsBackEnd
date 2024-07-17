@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 import "reflect-metadata";
 import { CreateAddressDto } from "./address.dto";
 import { Type } from "class-transformer";
@@ -60,7 +60,7 @@ export class UpdateEmployeeDto {
 	@IsString()
 	status: string;
 
-	@IsNotEmpty()
+	@IsOptional()
 	@IsString()
 	password: string;
 

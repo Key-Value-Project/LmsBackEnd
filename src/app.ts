@@ -4,10 +4,17 @@ import employeeRouter from "./routes/employee.routes";
 import AppdataSource from "./db/data-source";
 import errorMiddleware from "./middleware/error.middleware";
 import departmentRouter from "./routes/department.routes";
+import cors from "cors";
 
 const server = express();
 server.use(loggerMiddleware);
 server.use(express.json());
+server.use(
+	cors({
+		origin: "http://localhost:5173",
+		credentials: true,
+	})
+);
 server.use("/employee", employeeRouter);
 server.use("/department", departmentRouter);
 

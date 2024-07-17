@@ -78,8 +78,10 @@ class EmployeeService {
 		new_employee.status = employee.status;
 		// update function cant insert cascaded values like address and department
 		new_employee.role = employee.role;
-		new_employee.password = employee.password ? await bcrypt.hash(employee.password, 10) : null;
-
+		// Only hash and set the new password if it is provided and not empty
+		if (employee.password && employee.password.trim()) {
+			new_employee.password = await bcrypt.hash(employee.password, 10);
+		}
 		return this.employeeRepository.update(id, new_employee);
 	};
 

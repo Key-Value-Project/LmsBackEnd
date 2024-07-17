@@ -5,6 +5,9 @@ import { plainToInstance } from "class-transformer";
 import { CreateDepartmentDto } from "../dto/department.dto";
 import { validate } from "class-validator";
 import extractValidationErrors from "../utils/extractValidationErrors";
+import authorize from "../middleware/auth.middleware";
+import Role from "../utils/role.enum";
+import { RequestWithUser } from "../utils/requestWithUser";
 
 // API Calls
 class DepartmentController {
@@ -13,11 +16,11 @@ class DepartmentController {
 	constructor(private departmentService: DepartmentService) {
 		this.router = express.Router();
 
-		this.router.get("/", this.getAllDepartments);
-		this.router.get("/:name", this.getDepartmentEmployees);
-		this.router.post("/", this.createDepartment);
-		this.router.delete("/:name", this.deleteDepartment);
-		this.router.put("/:name", this.updateDepartment);
+		this.router.get("/", authorize, this.getAllDepartments);
+		this.router.get("/:name", authorize, this.getDepartmentEmployees);
+		this.router.post("/", authorize, this.createDepartment);
+		this.router.delete("/:name", authorize, this.deleteDepartment);
+		this.router.put("/:name", authorize, this.updateDepartment);
 	}
 
 	public getAllDepartments = async (req: Request, res: Response, next: NextFunction) => {
@@ -62,8 +65,13 @@ class DepartmentController {
 		}
 	};
 
-	public createDepartment = async (req: Request, res: Response, next: NextFunction) => {
+	public createDepartment = async (req: RequestWithUser, res: Response, next: NextFunction) => {
 		try {
+			const role = req.role;
+			if (!(role === Role.HR || role === Role.ADMIN)) {
+				throw new HttpException(403, "Forbidden", ["You are not authorized to create an department"]);
+			}
+
 			const departmentDto = plainToInstance(CreateDepartmentDto, req.body);
 			const errors = await validate(departmentDto);
 			if (errors.length > 0) {

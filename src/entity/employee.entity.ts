@@ -32,7 +32,7 @@ class Employee extends AbstractEntity {
 	@Column({ nullable: true })
 	role: Role;
 
-	@ManyToOne(() => Department, department => department.employees)
+	@ManyToOne(() => Department, (department) => department.employees)
 	department?: Department;
 }
 
