@@ -86,10 +86,7 @@ class EmployeeService {
 		return this.employeeRepository.update(id, new_employee);
 	};
 
-	updateEmployeeRelationship = async (
-		id: number,
-		employee: updateEmployeeRelationshipDto
-	): Promise<Employee | null> => {
+	updateEmployeeRelationship = async (id: number,employee: updateEmployeeRelationshipDto): Promise<Employee | null> => {
 		const new_employee = new Employee();
 		const new_address = new Address();
 		new_address.line1 = employee.address.line1;
@@ -103,6 +100,19 @@ class EmployeeService {
 		new_employee.department = new_department;
 		// remove password from the response
 		return this.employeeRepository.saveRelationship(id, new_employee);
+	};
+
+	updateEmployeePassword = async (id: number, passwordNew: string, passwordOld: string): Promise<Employee | null> => {
+		const employee = await this.employeeRepository.findOne({ id });
+		if (!employee) {
+			throw new HttpException(404, "Not found", ["Employee not found in the database"]);
+		}
+		const isValidPassword = await bcrypt.compare(passwordOld, employee.password);
+		if (!isValidPassword) {
+			throw new HttpException(401, "Unauthorized", ["Invalid password"]);
+		}
+		employee.password = await bcrypt.hash(passwordNew, 10);
+		return this.employeeRepository.save(employee);
 	};
 }
 

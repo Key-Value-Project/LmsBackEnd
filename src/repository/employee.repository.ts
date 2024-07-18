@@ -55,7 +55,6 @@ class EmployeeRepository {
 	};
 
 	update = async (id: number, employee: Employee): Promise<Employee> => {
-		console.log("EmployeeRepository -> update -> employee", employee);
 		await this.employeeRepositry.update({ id }, employee);
 		return this.findOne({ id });
 	};

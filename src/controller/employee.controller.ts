@@ -17,15 +17,25 @@ class EmployeeController {
 	constructor(private employeeService: EmployeeService) {
 		this.router = express.Router();
 
-		this.router.get("/", authorize, this.getAllEmployees);
-		this.router.get("/:id", authorize, this.getEmployeeById);
-		this.router.post("/", authorize, this.createEmployee);
-		this.router.delete("/:id", authorize, this.deleteEmployee);
-		this.router.post("/login", this.loginEmployee); // No authorization required here as it is a login route
-		this.router.put("/:id", authorize, this.updateEmployee);
-		this.router.patch("/:id", authorize, this.updateEmployeeRelationship);
 		this.router.get("/me", authorize, this.getUserParams);
+		this.router.get("/:id", authorize, this.getEmployeeById);
+		this.router.get("/", authorize, this.getAllEmployees);
+		this.router.post("/login", this.loginEmployee); // No authorization required here as it is a login route
+		this.router.post("/", authorize, this.createEmployee);
+		this.router.put("/:id", authorize, this.updateEmployee);
+		this.router.patch("/password", authorize, this.updateEmployeePassword);
+		this.router.patch("/:id", authorize, this.updateEmployeeRelationship);
+		this.router.delete("/:id", authorize, this.deleteEmployee);
 	}
+
+	public getUserParams = (req: RequestWithUser, res: Response, next: NextFunction) => {
+		try {
+			const { name, email, role, id } = req;
+			res.status(200).json({ name, email, role, id });
+		} catch (error) {
+			res.status(500).json({ message: "An error occurred while fetching user details." });
+		}
+	};
 
 	public loginEmployee = async (req: Request, res: Response, next: NextFunction) => {
 		const { email, password } = req.body;
@@ -37,15 +47,6 @@ class EmployeeController {
 			res.status(200).json(token);
 		} catch (err) {
 			next(err);
-		}
-	};
-
-	public getUserParams = (req: RequestWithUser, res: Response, next: NextFunction) => {
-		try {
-			const { name, email, role, id } = req;
-			res.status(200).json({ name, email, role, id });
-		} catch (error) {
-			res.status(500).json({ message: "An error occurred while fetching user details." });
 		}
 	};
 
@@ -164,6 +165,22 @@ class EmployeeController {
 			// remove password from the response
 			delete updatedEmployee.password;
 			res.status(200).send(updatedEmployee);
+		} catch (err) {
+			next(err);
+		}
+	};
+
+	public updateEmployeePassword = async (req: RequestWithUser, res: Response, next: NextFunction) => { 
+		const { id } = req;
+		const { passwordOld, passwordNew } = req.body;
+		try {
+			const updatedEmployee = await this.employeeService.updateEmployeePassword(id, passwordOld, passwordNew);
+			if (!updatedEmployee) {
+				throw new HttpException(404, "Record not found", [
+					"Employee not found or password is incorrect",
+				]);
+			}
+			res.status(200).json({ message: "Password updated successfully" });
 		} catch (err) {
 			next(err);
 		}

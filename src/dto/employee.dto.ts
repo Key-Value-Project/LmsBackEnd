@@ -80,3 +80,9 @@ export class updateEmployeeRelationshipDto {
 	@Type(() => CreateDepartmentDto)
 	department?: CreateDepartmentDto;
 }
+
+export class EmployeePasswordDto {
+	@IsNotEmpty()
+	@IsString()
+	password: string;
+}
