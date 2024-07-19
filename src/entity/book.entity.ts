@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, In, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import AbstractEntity from "./abstract-entity";
 import Shelf from "./shelves.entity";
 import BookDetail from "./bookDetail.entity";
@@ -17,10 +17,6 @@ class Book {
 
 	@DeleteDateColumn()
 	deletedAt: Date;
-
-    @Index()
-	@Column("bigint")
-	isbn: number;
 
 	@Column()
 	isborrow: boolean;
