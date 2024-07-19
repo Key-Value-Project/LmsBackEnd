@@ -28,10 +28,11 @@ class EmployeeController {
 		this.router.delete("/:id", authorize, this.deleteEmployee);
 	}
 
-	public getUserParams = (req: RequestWithUser, res: Response, next: NextFunction) => {
+	public getUserParams = async (req: RequestWithUser, res: Response, next: NextFunction) => {
 		try {
-			const { name, email, role, id } = req;
-			res.status(200).json({ name, email, role, id });
+			const { id } = req;
+			const employee = await this.employeeService.getEmployeeById(id);
+			res.status(200).json(employee);
 		} catch (error) {
 			res.status(500).json({ message: "An error occurred while fetching user details." });
 		}
