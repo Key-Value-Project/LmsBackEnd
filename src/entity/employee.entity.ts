@@ -1,9 +1,11 @@
-import { Column, Entity, Index, ManyToOne, OneToOne, Unique } from "typeorm";
+import { Column, Entity, Index, ManyToOne, OneToMany, OneToOne, Unique } from "typeorm";
 import AbstractEntity from "./abstract-entity";
 import Address from "./address.entity";
 import Role from "../utils/role.enum";
 import { deprecate } from "util";
 import Department from "./department.entity";
+import Subscription from "./subscription.entity";
+import BorrowedHistory from "./borrowedHistory.entity";
 
 @Entity()
 class Employee extends AbstractEntity {
@@ -34,6 +36,12 @@ class Employee extends AbstractEntity {
 
 	@ManyToOne(() => Department, (department) => department.employees)
 	department?: Department;
+
+	@OneToMany(() => Subscription, subscription => subscription.user)
+    subscriptions: Subscription[];
+
+    @OneToMany(() => BorrowedHistory, borrowedHistory => borrowedHistory.user)
+    borrowedHistory: BorrowedHistory[];
 }
 
 export default Employee;
