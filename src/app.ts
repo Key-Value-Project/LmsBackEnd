@@ -5,35 +5,40 @@ import AppdataSource from "./db/data-source";
 import errorMiddleware from "./middleware/error.middleware";
 import departmentRouter from "./routes/department.routes";
 import cors from "cors";
+import bookDetailRouter from "./routes/bookDetail.routes";
+import booksRouter from "./routes/books.routes";
+import ShelfRouter from "./routes/shelf.routes";
 
 const server = express();
 server.use(loggerMiddleware);
 server.use(express.json());
 server.use(
-	cors(
-	// 	{
-	// 	origin: "http://localhost:5173",
-	// 	credentials: true,
-	// }
-	)
+    cors()
+    // 	{
+    // 	origin: "http://localhost:5173",
+    // 	credentials: true,
+    // }
 );
 server.use("/employee", employeeRouter);
 server.use("/department", departmentRouter);
+server.use("/books", bookDetailRouter);
+server.use("/booksid", booksRouter);
+server.use("/shelf", ShelfRouter);
 
 server.get("/", (req, res) => {
-	res.send("Hello World");
+    res.send("Hello World");
 });
 
 server.use(errorMiddleware);
 
 (async () => {
-	try {
-		await AppdataSource.initialize();
-	} catch (e) {
-		console.log("Failed", e);
-		process.exit(1);
-	}
-	server.listen(3000, () => {
-		console.log("server listening to 3000");
-	});
+    try {
+        await AppdataSource.initialize();
+    } catch (e) {
+        console.log("Failed", e);
+        process.exit(1);
+    }
+    server.listen(3000, () => {
+        console.log("server listening to 3000");
+    });
 })();
