@@ -65,7 +65,17 @@ class BookService {
         const user = await this.employeeService.getEmployeeById(user_id);
         console.log("user", user);
         const borrowedHistoryRecord = await this.borrowedHistoryService.getByBorrowedHistory(isbn, user_id);
-        return borrowedHistoryRecord;
+        let today: Date = new Date();
+        const return_date = format(today, "yyyy-MM-dd");
+        let toupdateBook = await this.bookRepository.find({ id: borrowedHistoryRecord.book.id });
+        toupdateBook.isborrow = false;
+        const updateBook = await this.bookRepository.save(toupdateBook);
+        const updateborrowedHistoryRecord = await this.borrowedHistoryService.updateBorrowedHistory(
+            borrowedHistoryRecord.id,
+            shelf,
+            return_date
+        );
+        return updateborrowedHistoryRecord;
     };
 }
 export default BookService;

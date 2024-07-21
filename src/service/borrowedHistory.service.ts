@@ -17,6 +17,12 @@ class BorrowedHistoryService {
             returnShelf: null,
             user,
         });
+    updateBorrowedHistory = async (id, shelf, date) =>
+        this.borrowedHistoryRepository.save({
+            id,
+            return_date: date,
+            returnShelf: shelf,
+        });
 }
 
 export default BorrowedHistoryService;
