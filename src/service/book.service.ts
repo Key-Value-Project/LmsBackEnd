@@ -77,5 +77,10 @@ class BookService {
         );
         return updateborrowedHistoryRecord;
     };
+
+    getBookDetailsById = async (id: string) => {
+        const {bookDetail} = await this.bookRepository.find({id: id})
+        return bookDetail
+    }
 }
 export default BookService;

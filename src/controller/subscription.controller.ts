@@ -6,9 +6,11 @@ class SubscriptionController {
   public router: express.Router;
   constructor(private subscriptionService: SubscriptionService) {
     this.router = express.Router();
-    this.router.post("/", authorize, this.subscribeBook);
+    this.router.put("/", authorize, this.subscribeBook);
     this.router.delete("/", authorize, this.unsubscribeBook)
     this.router.patch("/", authorize, this.toggleNotify)
+    this.router.get("/", authorize, this.getSubscribedBookStatus)
+    this.router.get("/messages", authorize, this.getBookReturnRequests)
   }
 
   subscribeBook = async (
@@ -23,7 +25,7 @@ class SubscriptionController {
       Number(user_id),
       sent_request
     );
-    res.json(data);
+    res.status(200).send(data);
   };
 
   unsubscribeBook = async (
@@ -34,7 +36,7 @@ class SubscriptionController {
     const {isbn} = req.body;
     const user_id = req.id
     const data = await this.subscriptionService.unsubscribeBook(isbn, user_id)
-    res.json(data)
+    res.status(200).send(data)
   }
 
   toggleNotify = async (
@@ -45,8 +47,28 @@ class SubscriptionController {
     const {isbn} = req.body
     const user_id = req.id
     const data = await this.subscriptionService.toggleNotification(isbn, user_id)
-    res.json(data)
+    res.status(200).send(data)
 
+  }
+
+  getSubscribedBookStatus = async (
+    req: RequestWithUser,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const user_id = req.id
+    const data = await this.subscriptionService.getSubscribedBookStatus(user_id)
+    res.status(200).send(data)
+  }
+
+  getBookReturnRequests = async (
+    req: RequestWithUser,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const user_id = req.id
+    const data = await this.subscriptionService.getBookReturnRequestStatus(user_id)
+    res.status(200).send(data)
   }
 }
 export default SubscriptionController;

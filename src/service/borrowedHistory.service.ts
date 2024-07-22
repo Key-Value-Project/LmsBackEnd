@@ -1,3 +1,4 @@
+import Book from "../entity/book.entity";
 import BorrowedHistoryRepository from "../repository/borrowedHistory.repository";
 
 class BorrowedHistoryService {
@@ -23,6 +24,10 @@ class BorrowedHistoryService {
             return_date: date,
             returnShelf: shelf,
         });
+
+        findAllBooksBorrowedByUser = async (user_id: number) =>
+            this.borrowedHistoryRepository.find({user:{id:user_id}, return_date:null},["book"])
+            
 }
 
 export default BorrowedHistoryService;

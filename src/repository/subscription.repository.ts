@@ -7,11 +7,12 @@ class SubscriptionRepository {
         return this.subscriptionRepository.save(subscription)
     }
     
-    softRemove = async (subscription: Subscription): Promise<void> => {
+    softRemove = async (subscription: Subscription): Promise<Subscription> => {
 		// const subscription = await this.find({bookDetail:{isbn},user:{id:user_id}});
 		if (subscription) {
 			await this.subscriptionRepository.softRemove(subscription);
 		}
+        return subscription
     }
 
     find = async (filter: Partial<Subscription>): Promise<Subscription | null> => {
@@ -24,6 +25,14 @@ class SubscriptionRepository {
         let id = subscription.id
         this.subscriptionRepository.update({id},subscription)
         return subscription
+
+    }
+
+    getIsbnFromUserId = async (user_id: number) => {
+
+        let {bookDetail} = await this.find({user:{id: user_id}},)
+        return bookDetail.isbn
+
 
     }
 }
