@@ -11,6 +11,7 @@ class BookDetailController {
         this.router.get('/', authorize, this.getAllBookDetails);
         this.router.get('/:isbn', authorize, this.getBookLocationWithBookIsbn);
         this.router.get('/searchby/:title', authorize, this.searchBookDetailsWithTitle);
+        this.router.post("/create", authorize, this.createBookDetail);
     }
 
     public getAllBookDetails = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
@@ -51,5 +52,22 @@ class BookDetailController {
             next(err);
         }
     };
+
+    public createBookDetail = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+      try {
+        // if (!(request.role == Role.ADMIN)) {
+        //   throw new HttpException(403, "Forbidden", [
+        //     "You are not authorized to add books",
+        //   ]);
+        // }
+        const book = request.body;
+        console.log(book);
+        const bookDetails = await this.bookDetailsService.createBookDetail(book);
+        response.send(bookDetails);
+      } catch (err) {
+        next(err);
+      }
+    };
+
 }
 export default BookDetailController;

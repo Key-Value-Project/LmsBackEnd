@@ -1,5 +1,6 @@
 import { ILike } from 'typeorm';
 import BookDetailRepository from '../repository/bookDetail.repository';
+import BookDetail from '../entity/bookDetail.entity';
 
 class BookDetailsService {
     constructor(private bookDetailRepository: BookDetailRepository) {}
@@ -12,5 +13,15 @@ class BookDetailsService {
 
     getSearchBookDetailsWithTitle = async (incompleteTitle: string) =>
         await this.bookDetailRepository.findAllbyPpt({ title: ILike(`%${incompleteTitle}%`) });
+
+    createBookDetail=async(book:BookDetail)=>{
+        const newbookDetail = new BookDetail();
+		newbookDetail.isbn = book.isbn;
+        newbookDetail.author=book.author;
+        newbookDetail.title=book.title;
+		newbookDetail.description = book.description;
+		return this.bookDetailRepository.save(newbookDetail);
+    };
 }
+
 export default BookDetailsService;
