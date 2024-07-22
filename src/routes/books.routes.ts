@@ -1,4 +1,4 @@
-import BooksController from '../controller/books.controller';
+import BooksController from '../controller/book.controller';
 import AppdataSource from '../db/data-source';
 import Book from '../entity/book.entity';
 import BookDetail from '../entity/bookDetail.entity';
@@ -13,7 +13,7 @@ import DepartmentRepository from '../repository/department.repository';
 import EmployeeRepository from '../repository/employee.repository';
 import ShelfRepository from '../repository/shelf.repository';
 import BookService from '../service/book.service';
-import BookDetailsService from '../service/book_details.service';
+import BookDetailsService from '../service/bookDetails.service';
 import BorrowedHistoryService from '../service/borrowedHistory.service';
 import DepartmentService from '../service/department.service';
 import EmployeeService from '../service/employee.service';

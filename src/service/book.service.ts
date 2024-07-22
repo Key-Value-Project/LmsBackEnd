@@ -1,10 +1,13 @@
-import { addMonths, format } from 'date-fns';
+import { addMonths } from 'date-fns';
 import Book from '../entity/book.entity';
 import BookRepository from '../repository/books.repository';
-import BookDetailsService from './book_details.service';
+import BookDetailsService from './bookDetails.service';
 import BorrowedHistoryService from './borrowedHistory.service';
 import ShelfService from './shelf.service';
 import EmployeeService from './employee.service';
+import Shelf from '../entity/shelves.entity';
+import HttpException from '../execptions/http.exceptions';
+import dataSource from '../db/data-source';
 
 class BookService {
     constructor(
@@ -14,58 +17,110 @@ class BookService {
         private borrowedHistoryService: BorrowedHistoryService,
         private employeeService: EmployeeService
     ) {}
-    // getBooksNotBorrowedByIsbn = async (isbn: number) => {
-    //     const bookDetail = await this.bookDetailsService.getBookDetailsById(isbn);
-    //     console.log(bookDetail);
-    //     let fetchedBooks = await this.bookRepository.findAll({}, ["shelf", "bookDetail"]);
-    //     fetchedBooks = fetchedBooks.filter((book) => {
-    //         if (book.bookDetail.isbn.toString() === isbn.toString()) return book;
-    //     });
-    //     return fetchedBooks;
-    // };
+
     borrowBook = async (isbn: number, shelf_id: string, user_id: number) => {
-        const shelf = await this.shelfService.getShelfById(shelf_id);
-        const book: Book = await this.bookRepository.find(
-            {
-                shelf: {
-                    id: shelf.id,
-                },
-                bookDetail: {
-                    isbn,
-                },
-                isborrow: false,
-            },
-            ['shelf', 'bookDetail']
-        );
-        let today: Date = new Date();
-        const expected_return_date = format(addMonths(today, 1), 'yyyy-MM-dd');
-        const date = format(today, 'yyyy-MM-dd');
-        const user = await this.employeeService.getEmployeeById(user_id);
-        console.log(shelf, book, user);
         try {
-            const updateBookBorrowedHistory = await this.borrowedHistoryService.insertBorrowedHistory(book, shelf, date, expected_return_date, user);
-            let updateBook = book;
-            updateBook.isborrow = true;
-            const updateBookStatus = await this.bookRepository.save(updateBook);
-            console.log(updateBookStatus);
-            return updateBookBorrowedHistory;
-        } catch (e) {
-            console.log(e);
-            return e;
+            const shelf: Shelf = await this.shelfService.getShelfById(shelf_id);
+            if (!shelf) {
+                throw new HttpException(404, 'Not found', ['Shelf not found']);
+            }
+            const book: Book = await this.bookRepository.find(
+                {
+                    shelf: {
+                        id: shelf.id,
+                    },
+                    bookDetail: {
+                        isbn,
+                    },
+                    isborrow: false,
+                },
+                ['shelf', 'bookDetail']
+            );
+            if (!book) {
+                throw new HttpException(404, 'Not found', ['Book not found for the given shelf']);
+            }
+            let today: Date = new Date();
+            const expectedReturnDate: Date = addMonths(today, 1);
+            const user = await this.employeeService.getEmployeeById(user_id);
+            if (!user) {
+                throw new HttpException(404, 'Not found', ['User not found']);
+            }
+
+            const queryRunner = dataSource.createQueryRunner();
+            await queryRunner.connect();
+            await queryRunner.startTransaction();
+
+            try {
+                const updateBookBorrowedHistory = await this.borrowedHistoryService.insertBorrowedHistory(
+                    book,
+                    shelf,
+                    today,
+                    expectedReturnDate,
+                    user
+                );
+                let updateBook = book;
+                updateBook.isborrow = true;
+                const updateBookStatus = await this.bookRepository.save(updateBook);
+                console.log(updateBookStatus);
+                await queryRunner.commitTransaction();
+                return updateBookBorrowedHistory;
+            } catch (transactionError) {
+                console.log(transactionError);
+                await queryRunner.rollbackTransaction();
+                return transactionError;
+            } finally {
+                await queryRunner.release();
+            }
+        } catch (error) {
+            console.log(error);
+            return error;
         }
     };
+
     returnBook = async (isbn: number, shelf_id: string, user_id: number) => {
-        const shelf = await this.shelfService.getShelfById(shelf_id);
-        const user = await this.employeeService.getEmployeeById(user_id);
-        console.log('user', user);
-        const borrowedHistoryRecord = await this.borrowedHistoryService.getByBorrowedHistory(isbn, user_id);
-        let today: Date = new Date();
-        const return_date = format(today, 'yyyy-MM-dd');
-        let toupdateBook = await this.bookRepository.find({ id: borrowedHistoryRecord.book.id });
-        toupdateBook.isborrow = false;
-        const updateBook = await this.bookRepository.save(toupdateBook);
-        const updateborrowedHistoryRecord = await this.borrowedHistoryService.updateBorrowedHistory(borrowedHistoryRecord.id, shelf, return_date);
-        return updateborrowedHistoryRecord;
+        try {
+            const shelf = await this.shelfService.getShelfById(shelf_id);
+            if (!shelf) {
+                throw new HttpException(404, 'Not found', ['Shelf not found']);
+            }
+            const user = await this.employeeService.getEmployeeById(user_id);
+            if (!user) {
+                throw new HttpException(404, 'Not found', ['User not found']);
+            }
+            const borrowedHistoryRecord = await this.borrowedHistoryService.getByBorrowedHistory(isbn, user_id);
+            if (!borrowedHistoryRecord) {
+                throw new HttpException(404, 'Not found', ['Borrowed History not found']);
+            }
+            const return_date: Date = new Date();
+            let toUpdateBook = await this.bookRepository.find({ id: borrowedHistoryRecord.book.id });
+            if (!toUpdateBook) {
+                throw new HttpException(404, 'Not found', ['Book not found']);
+            }
+            toUpdateBook.isborrow = false;
+
+            const queryRunner = dataSource.createQueryRunner();
+            await queryRunner.connect();
+            await queryRunner.startTransaction();
+
+            try {
+                const updateBook = await this.bookRepository.save(toUpdateBook);
+                const updateborrowedHistoryRecord = await this.borrowedHistoryService.updateBorrowedHistory(
+                    borrowedHistoryRecord.id,
+                    shelf,
+                    return_date
+                );
+                return updateborrowedHistoryRecord;
+            } catch (e) {
+                await queryRunner.rollbackTransaction();
+                console.error('Failed to return book:', e);
+                return new HttpException(500, 'Internal Server Error', ['Failed to return book']);
+            } finally {
+                await queryRunner.release();
+            }
+        } catch (error) {
+            console.error('Failed to return book:', error);
+            return error;
+        }
     };
 }
 export default BookService;
