@@ -2,6 +2,8 @@ import express from 'express';
 import BookService from '../service/book.service';
 import { RequestWithUser } from '../utils/requestWithUser';
 import authorize from '../middleware/auth.middleware';
+import { plainToInstance } from 'class-transformer';
+import { BorrowBookDto } from '../dto/book.dto';
 
 class BooksController {
     public router: express.Router;
@@ -16,7 +18,8 @@ class BooksController {
         try {
             const { isbn, shelf_id } = req.body;
             const user_id = req.id;
-            const data = await this.bookService.borrowBook(isbn, shelf_id, Number(user_id));
+            const borrowBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
+            const data = await this.bookService.borrowBook(borrowBookDto);
             res.json(data);
         } catch (err) {
             next(err);
@@ -27,7 +30,8 @@ class BooksController {
         try {
             const { isbn, shelf_id } = req.body;
             const user_id = req.id;
-            const data = await this.bookService.returnBook(isbn, shelf_id, Number(user_id));
+            const returnBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
+            const data = await this.bookService.returnBook(returnBookDto);
             res.json(data);
         } catch (err) {
             next(err);
