@@ -21,8 +21,8 @@ server.use(
 );
 server.use("/employee", employeeRouter);
 server.use("/department", departmentRouter);
-server.use("/books", bookDetailRouter);
-server.use("/booksid", booksRouter);
+server.use("/book-details", bookDetailRouter);
+server.use("/books", booksRouter);
 server.use("/shelf", ShelfRouter);
 
 server.get("/", (req, res) => {
