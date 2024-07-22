@@ -13,7 +13,7 @@ export class CreateShelfDto {
 export class UpdateShelfDto {
     @IsOptional()
     @IsString()
-    code?: string;
+    code: string;
 
     @IsOptional()
     @IsString()

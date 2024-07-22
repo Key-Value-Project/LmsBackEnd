@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class LMSCodeUnique1721666406007 implements MigrationInterface {
-    name = 'LMSCodeUnique1721666406007'
+    name = 'LMSCodeUnique1721666406007';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`DROP INDEX "public"."IDX_71c031d5f3795602580acda1b7"`);
@@ -12,5 +12,4 @@ export class LMSCodeUnique1721666406007 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "public"."IDX_9c9a20437f9d718862e5b6e376"`);
         await queryRunner.query(`CREATE INDEX "IDX_71c031d5f3795602580acda1b7" ON "shelf" ("code") `);
     }
-
 }
