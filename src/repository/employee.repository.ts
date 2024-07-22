@@ -10,8 +10,8 @@ class EmployeeRepository {
 	}
 
 	findAll = async (): Promise<Employee[]> => {
-		// const employeeRepositry = this.dataSource.getRepository(Employee);
-		const list_of_employees = await this.employeeRepositry.find({ relations: ["address", "department"] });
+		const list_of_employees// const employeeRepositry = this.dataSource.getRepository(Employee);
+		 = await this.employeeRepositry.find({ relations: ["address", "department"] });
 		return list_of_employees;
 	};
 
