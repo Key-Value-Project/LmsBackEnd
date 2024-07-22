@@ -10,16 +10,7 @@ class BooksController {
         this.router = express.Router();
         this.router.post('/borrow', authorize, this.borrowBook);
         this.router.post('/return', authorize, this.returnBook);
-        // this.router.get("/:isbn", this.getAllbooksByIsbn);
     }
-
-    // getAllbooksByIsbn = async (request: express.Request, response: express.Response, next: express.NextFunction) => {
-    //     console.log("hitting");
-    //     const { isbn } = request.params;
-    //     console.log("isbn is", isbn);
-    //     const books = await this.bookService.getBooksNotBorrowedByIsbn(Number(isbn));
-    //     return response.json(books);
-    // };
 
     borrowBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {

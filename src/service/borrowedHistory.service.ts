@@ -1,10 +1,15 @@
+import Book from '../entity/book.entity';
+import Employee from '../entity/employee.entity';
+import Shelf from '../entity/shelves.entity';
 import BorrowedHistoryRepository from '../repository/borrowedHistory.repository';
 
 class BorrowedHistoryService {
     constructor(private borrowedHistoryRepository: BorrowedHistoryRepository) {}
-    getByBorrowedHistory = async (isbn, user_id) =>
+
+    getByBorrowedHistory = async (isbn: number, user_id: number) =>
         this.borrowedHistoryRepository.find({ book: { bookDetail: { isbn } }, user: { id: user_id }, return_date: null }, ['user', 'book']);
-    insertBorrowedHistory = async (book, shelf, date, expdate, user) =>
+
+    insertBorrowedHistory = async (book: Book, shelf: Shelf, date: Date, expdate: Date, user: Employee) =>
         this.borrowedHistoryRepository.save({
             book,
             borrowedShelf: shelf,
@@ -14,7 +19,8 @@ class BorrowedHistoryService {
             returnShelf: null,
             user,
         });
-    updateBorrowedHistory = async (id, shelf, date) =>
+
+    updateBorrowedHistory = async (id: number, shelf: Shelf, date: Date) =>
         this.borrowedHistoryRepository.save({
             id,
             return_date: date,

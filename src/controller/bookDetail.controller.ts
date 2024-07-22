@@ -1,6 +1,5 @@
 import express from 'express';
-import BookDetailsService from '../service/book_details.service';
-import { log } from 'console';
+import BookDetailsService from '../service/bookDetails.service';
 import authorize from '../middleware/auth.middleware';
 import { RequestWithUser } from '../utils/requestWithUser';
 import HttpException from '../execptions/http.exceptions';
@@ -10,23 +9,29 @@ class BookDetailController {
     constructor(private bookDetailsService: BookDetailsService) {
         this.router = express.Router();
         this.router.get('/', authorize, this.getAllBookDetails);
-        this.router.get('/:isbn', authorize, this.getAllBookDetailsWithBookId);
+        this.router.get('/:isbn', authorize, this.getBookLocationWithBookIsbn);
         this.router.get('/searchby/:title', authorize, this.searchBookDetailsWithTitle);
     }
 
     public getAllBookDetails = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
             const bookDetails = await this.bookDetailsService.getAllBookDetails();
+            if (!bookDetails || bookDetails.length === 0) {
+                return next(new HttpException(404, 'Books not found'));
+            }
             response.send(bookDetails);
         } catch (err) {
             next(err);
         }
     };
 
-    public getAllBookDetailsWithBookId = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+    public getBookLocationWithBookIsbn = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
             const { isbn } = request.params;
             const bookDetails = await this.bookDetailsService.getAllBookDetailsWithBookId(isbn);
+            if (!bookDetails || bookDetails.length === 0) {
+                return next(new HttpException(404, 'Book not found'));
+            }
             response.json(bookDetails);
         } catch (err) {
             next(err);
@@ -35,10 +40,12 @@ class BookDetailController {
 
     public searchBookDetailsWithTitle = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
-            console.log('in searchBook details with title');
+            // console.log('in searchBook details with title');
             const { title } = request.params;
-            console.log(title);
             const bookDetails = await this.bookDetailsService.getSearchBookDetailsWithTitle(title);
+            if (!bookDetails) {
+                return next(new HttpException(404, 'Book not found'));
+            }
             response.json(bookDetails);
         } catch (err) {
             next(err);
