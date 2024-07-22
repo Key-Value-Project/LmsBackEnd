@@ -17,7 +17,7 @@ class Shelf {
     @DeleteDateColumn()
     deletedAt: Date;
 
-    @Index()
+    @Index({ unique: true, where: 'deleted_at IS NULL' })
     @Column()
     code: string;
 
