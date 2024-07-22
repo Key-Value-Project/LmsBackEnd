@@ -11,5 +11,14 @@ class BookRepository {
         await this.bookRepository.findOne({ where: filter, relations: relationArray });
 
     save = async (data: Book) => await this.bookRepository.save(data);
+
+    softDelete=async(id:string)=> await this.bookRepository.softDelete({id})
+    
+
+    update=async(id:string,book:Book)=>{
+    await this.bookRepository.update({id},book);
+    return this.find({id})
+    };
+
 }
 export default BookRepository;

@@ -9,6 +9,7 @@ import Shelf from '../entity/shelves.entity';
 import HttpException from '../execptions/http.exceptions';
 import dataSource from '../db/data-source';
 import { BorrowBookDto } from '../dto/book.dto';
+import BookDetail from '../entity/bookDetail.entity';
 
 class BookService {
     constructor(
@@ -124,9 +125,65 @@ class BookService {
         }
     };
 
+
     getBorrowedBooks = async (user_id: number) => {
         const BorrowedHistory = await this.borrowedHistoryService.getByBorrowedHistoryOfUser(user_id);
         return BorrowedHistory;
     };
+
+    getAllBooks = async () => {
+      const book = await this.bookRepository.findAll({}, ["bookDetail"]);
+      console.log(book);
+      return book;
+    };
+  
+    createBook = async (book: Book) => {
+      const shelfData: Shelf = await this.shelfService.getShelfById(
+        book.shelf.id
+      );
+      if (!shelfData) {
+        throw new HttpException(404, "Not found", [
+          "Shelf not found in the database",
+        ]);
+      }
+      const bookDetail: BookDetail =
+        await this.bookDetailsService.getBookDetailsById(book.bookDetail.isbn);
+      if (!bookDetail) {
+        throw new HttpException(404, "Not found", [
+          "Book not found in the database",
+        ]);
+      }
+  
+      const newbook = new Book();
+      newbook.isborrow = book.isborrow;
+      newbook.shelf = book.shelf;
+      newbook.bookDetail = book.bookDetail;
+      return this.bookRepository.save(newbook);
+    };
+  
+    deleteBook=async(id:string)=>{
+        const book=await this.bookRepository.find({id})
+        if(book.isborrow===true){
+          throw new HttpException(404, "Not found", [
+              "Book is borrowed",
+            ]);
+        }
+        if(!book){
+          throw new HttpException(404, "Not found", [
+              "Book not found in the database",
+            ]);
+        }
+        await this.bookRepository.softDelete(id);
+    };
+  
+        updateBooks=async(id:string,book:Book)=>{
+  
+        const newBook = new Book();
+        newBook.isborrow = book.isborrow;
+        newBook.shelf=book.shelf;
+        newBook.bookDetail=book.bookDetail;
+        return this.bookRepository.update(id,newBook);
+    }
+
 }
 export default BookService;
