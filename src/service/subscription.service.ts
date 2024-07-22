@@ -24,5 +24,10 @@ class SubscriptionService {
 
     // TODO find status and then revert it
   };
+
+  unsubscribeBook = async (isbn: number, user_id: number) => {
+    const subscription = await this.subscriptionRepository.find({bookDetail:{isbn:isbn},user:{id:user_id}})
+    const data = await this.subscriptionRepository.softRemove(subscription)
+  }
 }
 export default SubscriptionService;

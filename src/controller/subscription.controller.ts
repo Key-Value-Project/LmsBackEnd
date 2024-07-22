@@ -7,6 +7,7 @@ class SubscriptionController {
   constructor(private subscriptionService: SubscriptionService) {
     this.router = express.Router();
     this.router.post("/", authorize, this.subscribeBook);
+    this.router.delete("/", authorize, this.unsubscribeBook)
   }
 
   subscribeBook = async (
@@ -23,5 +24,16 @@ class SubscriptionController {
     );
     res.json(data);
   };
+
+  unsubscribeBook = async (
+    req: RequestWithUser,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const {isbn} = req.body;
+    const user_id = req.id
+    const data = await this.subscriptionService.unsubscribeBook(isbn, user_id)
+    res.json(data)
+  }
 }
 export default SubscriptionController;
