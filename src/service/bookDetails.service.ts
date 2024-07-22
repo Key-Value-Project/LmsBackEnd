@@ -5,7 +5,22 @@ import BookDetail from '../entity/bookDetail.entity';
 class BookDetailsService {
     constructor(private bookDetailRepository: BookDetailRepository) {}
 
-    getAllBookDetails = async () => await this.bookDetailRepository.findAll();
+    getAllBookDetails = async () => {
+        const bookdetails = await this.bookDetailRepository.findAll({}, ['books']);
+        const updatedBookDetails = bookdetails.map((bookDetail) => {
+            const isAvailable = bookDetail.books.some((book) => !book.isborrow);
+            return {
+                ...bookDetail,
+                status: isAvailable ? 'Available' : 'Not-Available',
+                books: undefined,
+            };
+        });
+
+        const finalBookDetails = updatedBookDetails.map(({ books, ...rest }) => rest);
+
+        console.log(finalBookDetails);
+        return finalBookDetails;
+    };
 
     getAllBookDetailsWithBookId = async (isbn) => await this.bookDetailRepository.findAll({ isbn }, ['books', 'books.shelf']);
 

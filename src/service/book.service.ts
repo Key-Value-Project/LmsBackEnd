@@ -26,12 +26,13 @@ class BookService {
             if (!shelf) {
                 throw new HttpException(404, 'Not found', ['Shelf not found']);
             }
+            console.log(bookDto.isbn);
             const book: Book = await this.bookRepository.find(
                 {
                     shelf: {
                         id: shelf.id,
                     },
-                    bookDetail: bookDto.isbn,
+                    bookDetail: { isbn: bookDto.isbn },
                     isborrow: false,
                 },
                 ['shelf', 'bookDetail']
@@ -124,6 +125,12 @@ class BookService {
         }
     };
 
+
+    getBorrowedBooks = async (user_id: number) => {
+        const BorrowedHistory = await this.borrowedHistoryService.getByBorrowedHistoryOfUser(user_id);
+        return BorrowedHistory;
+    };
+
     getAllBooks = async () => {
       const book = await this.bookRepository.findAll({}, ["bookDetail"]);
       console.log(book);
@@ -177,5 +184,6 @@ class BookService {
         newBook.bookDetail=book.bookDetail;
         return this.bookRepository.update(id,newBook);
     }
+
 }
 export default BookService;

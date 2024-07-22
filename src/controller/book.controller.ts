@@ -12,6 +12,7 @@ class BooksController {
         this.router = express.Router();
         this.router.post('/borrow', authorize, this.borrowBook);
         this.router.post('/return', authorize, this.returnBook);
+        this.router.get('/borrowhistory', authorize, this.getBorrowHistory);
         this.router.get("/allbooks", authorize, this.getAllBooks);
         this.router.post("/create", authorize, this.createBook);
         this.router.delete("/delete/:id",authorize,this.deleteBook);
@@ -36,6 +37,16 @@ class BooksController {
             const user_id = req.id;
             const returnBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
             const data = await this.bookService.returnBook(returnBookDto);
+            res.json(data);
+        } catch (err) {
+            next(err);
+        }
+    };
+
+    getBorrowHistory = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+        try {
+            const user_id = req.id;
+            const data = await this.bookService.getBorrowedBooks(user_id);
             res.json(data);
         } catch (err) {
             next(err);
@@ -122,5 +133,6 @@ class BooksController {
       next(err)
   }
   };
+
 }
 export default BooksController;

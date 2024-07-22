@@ -27,6 +27,3 @@ export class BorrowBookDto {
     @IsNumber()
     user_id: number;
 }
-
-
-
