@@ -1,6 +1,6 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
-import Book from "./book.entity";
-import Subscription from "./subscription.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import Book from './book.entity';
+import Subscription from './subscription.entity';
 
 @Entity()
 class BookDetail {
@@ -17,20 +17,19 @@ class BookDetail {
     description: string;
 
     @CreateDateColumn()
-	createdAt: Date;
+    createdAt: Date;
 
-	@UpdateDateColumn()
-	updatedAt: Date;
+    @UpdateDateColumn()
+    updatedAt: Date;
 
-	@DeleteDateColumn()
-	deletedAt: Date;
+    @DeleteDateColumn()
+    deletedAt: Date;
 
-    @OneToMany(() => Subscription, subscription => subscription.bookDetail)
+    @OneToMany(() => Subscription, (subscription) => subscription.bookDetail)
     subscriptions: Subscription[];
 
-    @OneToMany(() => Book, book => book.bookDetail)
+    @OneToMany(() => Book, (book) => book.bookDetail)
     books: Book[];
-
 }
 
 export default BookDetail;

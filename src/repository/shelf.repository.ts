@@ -1,5 +1,5 @@
-import { Repository } from "typeorm";
-import Shelf from "../entity/shelves.entity";
+import { Repository } from 'typeorm';
+import Shelf from '../entity/shelves.entity';
 
 class ShelfRepository {
     constructor(private shelfRepository: Repository<Shelf>) {}

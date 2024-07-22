@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class EmployeeAddColumns1721102262666 implements MigrationInterface {
-    name = 'EmployeeAddColumns1721102262666'
+    name = 'EmployeeAddColumns1721102262666';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "employee" DROP COLUMN "age"`);
@@ -14,5 +14,4 @@ export class EmployeeAddColumns1721102262666 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "employee" DROP COLUMN "experience"`);
         await queryRunner.query(`ALTER TABLE "employee" ADD "age" integer NOT NULL`);
     }
-
 }
