@@ -1,3 +1,4 @@
+import { IsNull } from 'typeorm';
 import Book from '../entity/book.entity';
 import Employee from '../entity/employee.entity';
 import Shelf from '../entity/shelves.entity';
@@ -7,7 +8,7 @@ class BorrowedHistoryService {
     constructor(private borrowedHistoryRepository: BorrowedHistoryRepository) {}
 
     getByBorrowedHistory = async (isbn: number, user_id: number) =>
-        this.borrowedHistoryRepository.find({ book: { bookDetail: { isbn } }, user: { id: user_id }, return_date: null }, ['user', 'book']);
+        this.borrowedHistoryRepository.find({ book: { bookDetail: { isbn } }, user: { id: user_id }, return_date: IsNull() }, ['user', 'book']);
 
     insertBorrowedHistory = async (book: Book, shelf: Shelf, date: Date, expdate: Date, user: Employee) =>
         this.borrowedHistoryRepository.save({

@@ -8,6 +8,7 @@ import EmployeeService from './employee.service';
 import Shelf from '../entity/shelves.entity';
 import HttpException from '../execptions/http.exceptions';
 import dataSource from '../db/data-source';
+import { BorrowBookDto } from '../dto/book.dto';
 
 class BookService {
     constructor(
@@ -18,9 +19,9 @@ class BookService {
         private employeeService: EmployeeService
     ) {}
 
-    borrowBook = async (isbn: number, shelf_id: string, user_id: number) => {
+    borrowBook = async (bookDto: BorrowBookDto) => {
         try {
-            const shelf: Shelf = await this.shelfService.getShelfById(shelf_id);
+            const shelf: Shelf = await this.shelfService.getShelfById(bookDto.shelf_id);
             if (!shelf) {
                 throw new HttpException(404, 'Not found', ['Shelf not found']);
             }
@@ -29,9 +30,7 @@ class BookService {
                     shelf: {
                         id: shelf.id,
                     },
-                    bookDetail: {
-                        isbn,
-                    },
+                    bookDetail: bookDto.isbn,
                     isborrow: false,
                 },
                 ['shelf', 'bookDetail']
@@ -41,7 +40,7 @@ class BookService {
             }
             let today: Date = new Date();
             const expectedReturnDate: Date = addMonths(today, 1);
-            const user = await this.employeeService.getEmployeeById(user_id);
+            const user = await this.employeeService.getEmployeeById(bookDto.user_id);
             if (!user) {
                 throw new HttpException(404, 'Not found', ['User not found']);
             }
@@ -77,17 +76,18 @@ class BookService {
         }
     };
 
-    returnBook = async (isbn: number, shelf_id: string, user_id: number) => {
+    returnBook = async (bookDTo: BorrowBookDto) => {
         try {
-            const shelf = await this.shelfService.getShelfById(shelf_id);
+            const shelf = await this.shelfService.getShelfById(bookDTo.shelf_id);
             if (!shelf) {
                 throw new HttpException(404, 'Not found', ['Shelf not found']);
             }
-            const user = await this.employeeService.getEmployeeById(user_id);
+            const user = await this.employeeService.getEmployeeById(bookDTo.user_id);
             if (!user) {
                 throw new HttpException(404, 'Not found', ['User not found']);
             }
-            const borrowedHistoryRecord = await this.borrowedHistoryService.getByBorrowedHistory(isbn, user_id);
+            const borrowedHistoryRecord = await this.borrowedHistoryService.getByBorrowedHistory(bookDTo.isbn, bookDTo.user_id);
+            console.log('borrowed history', borrowedHistoryRecord);
             if (!borrowedHistoryRecord) {
                 throw new HttpException(404, 'Not found', ['Borrowed History not found']);
             }
