@@ -3,20 +3,24 @@ import BookService from '../service/book.service';
 import { RequestWithUser } from '../utils/requestWithUser';
 import authorize from '../middleware/auth.middleware';
 import { plainToInstance } from 'class-transformer';
-import { BorrowBookDto } from '../dto/book.dto';
+import { BorrowBookDto, CreateBookDto, UpdateBookDto } from '../dto/book.dto';
+import Permission from '../utils/permission.roles';
+import Role from '../utils/role.enum';
+import HttpException from '../execptions/http.exceptions';
+import { validate } from 'class-validator';
 
 class BooksController {
     public router: express.Router;
 
     constructor(private bookService: BookService) {
         this.router = express.Router();
+        this.router.get('/borrowhistory', authorize, this.getBorrowHistory);
+        this.router.get('/', authorize, this.getAllBooks);
         this.router.post('/borrow', authorize, this.borrowBook);
         this.router.post('/return', authorize, this.returnBook);
-        this.router.get('/borrowhistory', authorize, this.getBorrowHistory);
-        this.router.get("/allbooks", authorize, this.getAllBooks);
-        this.router.post("/create", authorize, this.createBook);
-        this.router.delete("/delete/:id",authorize,this.deleteBook);
-        this.router.put("/update/:id",authorize,this.updateBook)
+        this.router.post('/create', authorize, this.createBook);
+        this.router.patch('/update/:id', authorize, this.updateBook);
+        this.router.delete('/delete/:id', authorize, this.deleteBook);
     }
 
     borrowBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
@@ -24,6 +28,10 @@ class BooksController {
             const { isbn, shelf_id } = req.body;
             const user_id = req.id;
             const borrowBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
+            const errors = await validate(borrowBookDto);
+            if (errors.length > 0) {
+                throw new HttpException(400, 'Validation failed', errors);
+            }
             const data = await this.bookService.borrowBook(borrowBookDto);
             res.json(data);
         } catch (err) {
@@ -36,6 +44,10 @@ class BooksController {
             const { isbn, shelf_id } = req.body;
             const user_id = req.id;
             const returnBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
+            const errors = await validate(returnBookDto);
+            if (errors.length > 0) {
+                throw new HttpException(400, 'Validation failed', errors);
+            }
             const data = await this.bookService.returnBook(returnBookDto);
             res.json(data);
         } catch (err) {
@@ -54,85 +66,63 @@ class BooksController {
     };
 
     getAllBooks = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
-      const data = await this.bookService.getAllBooks();
-      res.json(data);
+        const data = await this.bookService.getAllBooks();
+        res.json(data);
     };
-  
-    createBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
-      {
-        try {
-          if (!(request.role == Role.ADMIN)) {
-            throw new HttpException(403, "Forbidden", [
-              "You are not authorized to add books",
-            ]);
-          }
-          const book = request.body;
-          console.log(book);
-          const bookDetails = await this.bookService.createBook(book);
-          response.send(bookDetails);
-        } catch (err) {
-          if (err.code === "23503") {
-            const error = new HttpException(404, "Not found", [
-              "Shelf or book not found in the database",
-            ]);
-            next(error);
-          }
-          next(err);
-        }
-      }
-    };
-  
-    deleteBook = async (request: RequestWithUser,
-      response: express.Response,
-      next: express.NextFunction
-    ) => {
-      {
-        try {
-          if (!(request.role == Role.ADMIN)) {
-            throw new HttpException(403, "Forbidden", [
-              "You are not authorized to delete books",
-            ]);
-          }
-          const id = request.params.id;
-          const bookDetails = await this.bookService.deleteBook(id);
-          response.send(bookDetails);
-        } catch (err) {
-          if (err.code === "23503") {
-            const error = new HttpException(404, "Not found", [
-              "Book not found in the database",
-            ]);
-            next(error);
-          }
-          next(err);
-        }
-      }
-    };
-  
-    public updateBook=async(
-      request: RequestWithUser,
-      response: express.Response,
-      next: express.NextFunction
-  )=>{
-      try{
-      if (!(request.role==Role.ADMIN)){
-          throw new HttpException(403, "Forbidden", ["You are not authorized to update books"]);
-      }
-  
-      const id=request.params.id
-      const book=request.body;
-      console.log(book);
-      const bookDetails = await this.bookService.updateBooks(id,book);
-      response.send(bookDetails);
-  }catch(err){
-      if (err.code === "23503") {
-          const error = new HttpException(404, "Not found", [
-            "Book not found in the database",
-          ]);
-          next(error);
-        }
-      next(err)
-  }
-  };
 
+    createBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+        try {
+            Permission.userPermission(request, [Role.HR, Role.ADMIN], ['You are not authorized to create books']);
+            const bookDto = plainToInstance(CreateBookDto, request.body);
+            const errors = await validate(bookDto);
+            if (errors.length > 0) {
+                throw new HttpException(400, 'Validation failed', errors);
+            }
+
+            const bookDetails = await this.bookService.createBook(bookDto);
+            response.send(bookDetails);
+        } catch (err) {
+            if (err.code === '23503') {
+                const error = new HttpException(404, 'Not found', ['Shelf or book not found in the database']);
+                next(error);
+            }
+            next(err);
+        }
+    };
+
+    deleteBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+        try {
+            Permission.userPermission(request, [Role.HR, Role.ADMIN], ['You are not authorized to delete books']);
+            const id = request.params.id;
+            const bookDetails = await this.bookService.deleteBook(id);
+            response.send(bookDetails);
+        } catch (err) {
+            if (err.code === '23503') {
+                const error = new HttpException(404, 'Not found', ['Book not found in the database']);
+                next(error);
+            }
+            next(err);
+        }
+    };
+
+    public updateBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+        try {
+            Permission.userPermission(request, [Role.HR, Role.ADMIN], ['You are not authorized to update books']);
+            const id = request.params.id;
+            const bookDto = plainToInstance(UpdateBookDto, request.body);
+            const errors = await validate(bookDto);
+            if (errors.length > 0) {
+                throw new HttpException(400, 'Validation failed', errors);
+            }
+            const bookDetails = await this.bookService.updateBooks(id, bookDto);
+            response.send(bookDetails);
+        } catch (err) {
+            if (err.code === '23503') {
+                const error = new HttpException(404, 'Not found', ['Book not found in the database']);
+                next(error);
+            }
+            next(err);
+        }
+    };
 }
 export default BooksController;

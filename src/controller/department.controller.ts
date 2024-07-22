@@ -17,11 +17,11 @@ class DepartmentController {
     constructor(private departmentService: DepartmentService) {
         this.router = express.Router();
 
-        this.router.get('/', authorize, this.getAllDepartments);
         this.router.get('/:name', authorize, this.getDepartmentEmployees);
+        this.router.get('/', authorize, this.getAllDepartments);
         this.router.post('/', authorize, this.createDepartment);
-        this.router.delete('/:name', authorize, this.deleteDepartment);
         this.router.put('/:name', authorize, this.updateDepartment);
+        this.router.delete('/:name', authorize, this.deleteDepartment);
     }
 
     public getAllDepartments = async (req: Request, res: Response, next: NextFunction) => {

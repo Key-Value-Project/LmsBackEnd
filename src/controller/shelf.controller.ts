@@ -4,7 +4,10 @@ import authorize from '../middleware/auth.middleware';
 import Permission from '../utils/permission.roles';
 import Role from '../utils/role.enum';
 import { RequestWithUser } from '../utils/requestWithUser';
-import HttpException from "../execptions/http.exceptions";
+import HttpException from '../execptions/http.exceptions';
+import { plainToInstance } from 'class-transformer';
+import { CreateShelfDto, UpdateShelfDto } from '../dto/shelf.dto';
+import { validate } from 'class-validator';
 
 class ShelfController {
     public router: express.Router;
@@ -12,9 +15,9 @@ class ShelfController {
     constructor(private shelfService: ShelfService) {
         this.router = express.Router();
         this.router.get('/', authorize, this.getAllShelfs);
-        this.router.post("/create",authorize,this.createShelf)
-        this.router.delete("/delete/:id",authorize,this.deleteShelf)
-        this.router.put("/update/:id",authorize,this.updateShelf)
+        this.router.post('/create', authorize, this.createShelf);
+        this.router.put('/update/:id', authorize, this.updateShelf);
+        this.router.delete('/delete/:id', authorize, this.deleteShelf);
     }
 
     public getAllShelfs = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
@@ -28,73 +31,57 @@ class ShelfController {
         }
     };
 
-    public createShelf=async(req: RequestWithUser, res: express.Response, next: express.NextFunction)=>{
-        try{
-        Permission.userPermission(req, [Role.ADMIN], ["You do not have permission"]);
-        const shelf=req.body
-        const shelfdetails = await this.shelfService.createShelf(shelf);
-        res.status(201).send(shelfdetails)}
-        catch(err){
-            if (err.code === "23503") {
-                const error = new HttpException(404, "Not found", [
-                  "Code or location is not given",
-                ]);
+    public createShelf = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+        try {
+            Permission.userPermission(req, [Role.ADMIN], ['You do not have permission']);
+            const shelfDto = plainToInstance(CreateShelfDto, req.body);
+            const errors = await validate(shelfDto);
+            if (errors.length > 0) {
+                throw new HttpException(400, 'Validation failed', errors);
+            }
+            const shelfdetails = await this.shelfService.createShelf(shelfDto);
+            res.status(201).send(shelfdetails);
+        } catch (err) {
+            if (err.code === '23505') {
+                const error = new HttpException(400, 'Bad Request', ['Shelf already exists']);
                 next(error);
-              }
-            next(err)
+            }
+            next(err);
         }
     };
 
-    public deleteShelf= async (
-        request: RequestWithUser,
-        response: express.Response,
-        next: express.NextFunction
-      ) => {
+    public deleteShelf = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         {
-          try {
-            if (!(request.role == Role.ADMIN)) {
-              throw new HttpException(403, "Forbidden", [
-                "You are not authorized to delete shelves",
-              ]);
+            try {
+                Permission.userPermission(request, [Role.ADMIN], ['You do not have permission']);
+                const id = request.params.id;
+                const bookDetails = await this.shelfService.deleteShelf(id);
+                response.send(bookDetails);
+            } catch (err) {
+                if (err.code === '23503') {
+                    const error = new HttpException(404, 'Not found', ['Shelf not found in the database']);
+                    next(error);
+                }
+                next(err);
             }
+        }
+    };
+
+    public updateShelf = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+        try {
+            Permission.userPermission(request, [Role.ADMIN], ['You do not have permission']);
+
             const id = request.params.id;
-            const bookDetails = await this.shelfService.deleteShelf(id);
+            const shelfDto = plainToInstance(UpdateShelfDto, request.body);
+            const bookDetails = await this.shelfService.updateShelf(id, shelfDto);
             response.send(bookDetails);
-          } catch (err) {
-            if (err.code === "23503") {
-              const error = new HttpException(404, "Not found", [
-                "Shelf not found in the database",
-              ]);
-              next(error);
+        } catch (err) {
+            if (err.code === '23503') {
+                const error = new HttpException(404, 'Not found', ['Code or location is not given']);
+                next(error);
             }
             next(err);
-          }
         }
-      };
-
-      public updateShelf=async(
-        request: RequestWithUser,
-        response: express.Response,
-        next: express.NextFunction
-    )=>{
-        try{
-        if (!(request.role==Role.ADMIN)){
-            throw new HttpException(403, "Forbidden", ["You are not authorized to update shelves"]);
-        }
-    
-        const id=request.params.id
-        const shelf=request.body;
-        const bookDetails = await this.shelfService.updateShelf(id,shelf);
-        response.send(bookDetails);
-    }catch(err){
-        if (err.code === "23503") {
-            const error = new HttpException(404, "Not found", [
-              "Code or location is not given",
-            ]);
-            next(error);
-          }
-        next(err)
-    }
     };
 }
 export default ShelfController;

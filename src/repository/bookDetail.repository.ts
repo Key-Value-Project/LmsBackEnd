@@ -10,10 +10,11 @@ class BookDetailRepository {
     findAllbyPpt = async (filter: any) => this.bookDetailRepository.findBy(filter);
 
     find = async (filter: Partial<BookDetail>, relationArray = []) => this.bookDetailRepository.findOne({ where: filter, relations: relationArray });
-    
-    save=async(book:BookDetail)=>{
-        console.log(book)
+
+    save = async (book: BookDetail) => {
+        // console.log(book);
         return this.bookDetailRepository.save(book);
-    }
+    };
 }
+
 export default BookDetailRepository;

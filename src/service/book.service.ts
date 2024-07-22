@@ -8,7 +8,7 @@ import EmployeeService from './employee.service';
 import Shelf from '../entity/shelves.entity';
 import HttpException from '../execptions/http.exceptions';
 import dataSource from '../db/data-source';
-import { BorrowBookDto } from '../dto/book.dto';
+import { BorrowBookDto, CreateBookDto, UpdateBookDto } from '../dto/book.dto';
 import BookDetail from '../entity/bookDetail.entity';
 
 class BookService {
@@ -125,65 +125,65 @@ class BookService {
         }
     };
 
-
     getBorrowedBooks = async (user_id: number) => {
         const BorrowedHistory = await this.borrowedHistoryService.getByBorrowedHistoryOfUser(user_id);
         return BorrowedHistory;
     };
 
     getAllBooks = async () => {
-      const book = await this.bookRepository.findAll({}, ["bookDetail"]);
-      console.log(book);
-      return book;
+        const book = await this.bookRepository.findAll({}, ['bookDetail']);
+        return book;
     };
-  
-    createBook = async (book: Book) => {
-      const shelfData: Shelf = await this.shelfService.getShelfById(
-        book.shelf.id
-      );
-      if (!shelfData) {
-        throw new HttpException(404, "Not found", [
-          "Shelf not found in the database",
-        ]);
-      }
-      const bookDetail: BookDetail =
-        await this.bookDetailsService.getBookDetailsById(book.bookDetail.isbn);
-      if (!bookDetail) {
-        throw new HttpException(404, "Not found", [
-          "Book not found in the database",
-        ]);
-      }
-  
-      const newbook = new Book();
-      newbook.isborrow = book.isborrow;
-      newbook.shelf = book.shelf;
-      newbook.bookDetail = book.bookDetail;
-      return this.bookRepository.save(newbook);
-    };
-  
-    deleteBook=async(id:string)=>{
-        const book=await this.bookRepository.find({id})
-        if(book.isborrow===true){
-          throw new HttpException(404, "Not found", [
-              "Book is borrowed",
-            ]);
+
+    // ADMIN ROUTES
+    createBook = async (book: CreateBookDto) => {
+        const shelfData: Shelf = await this.shelfService.getShelfById(book.shelf_id);
+        if (!shelfData) {
+            throw new HttpException(404, 'Not found', ['Shelf not found in the database']);
         }
-        if(!book){
-          throw new HttpException(404, "Not found", [
-              "Book not found in the database",
-            ]);
+        const bookDetail: BookDetail = await this.bookDetailsService.getBookDetailsById(book.isbn);
+        if (!bookDetail) {
+            throw new HttpException(404, 'Not found', ['Book not found in the database']);
+        }
+
+        const newbook = new Book();
+        newbook.isborrow = false;
+        newbook.shelf = shelfData;
+        newbook.bookDetail = bookDetail;
+        return this.bookRepository.save(newbook);
+    };
+
+    deleteBook = async (id: string) => {
+        const book = await this.bookRepository.find({ id });
+        if (book.isborrow === true) {
+            throw new HttpException(400, 'Bad Request', ['Book is borrowed']);
+        }
+        if (!book) {
+            throw new HttpException(404, 'Not found', ['Book not found in the database']);
         }
         await this.bookRepository.softDelete(id);
     };
-  
-        updateBooks=async(id:string,book:Book)=>{
-  
-        const newBook = new Book();
-        newBook.isborrow = book.isborrow;
-        newBook.shelf=book.shelf;
-        newBook.bookDetail=book.bookDetail;
-        return this.bookRepository.update(id,newBook);
-    }
 
+    updateBooks = async (id: string, book: UpdateBookDto) => {
+        const newBook = new Book();
+        if (book.isborrow) {
+            newBook.isborrow = book.isborrow;
+        }
+        if (book.shelf_id) {
+            const shelfData: Shelf = await this.shelfService.getShelfById(book.shelf_id);
+            if (!shelfData) {
+                throw new HttpException(404, 'Not found', ['Shelf not found in the database']);
+            }
+            newBook.shelf = shelfData;
+        }
+        if (book.isbn) {
+            const bookDetail: BookDetail = await this.bookDetailsService.getBookDetailsById(book.isbn);
+            if (!bookDetail) {
+                throw new HttpException(404, 'Not found', ['Book not found in the database']);
+            }
+            newBook.bookDetail = bookDetail;
+        }
+        return this.bookRepository.update(id, newBook);
+    };
 }
 export default BookService;

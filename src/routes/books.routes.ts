@@ -20,24 +20,16 @@ import EmployeeService from '../service/employee.service';
 import ShelfService from '../service/shelf.service';
 
 const booksController = new BooksController(
-  new BookService(
-    new BookRepository(AppdataSource.getRepository(Book)),
-    new ShelfService(new ShelfRepository(AppdataSource.getRepository(Shelf))),
-    new BookDetailsService(
-      new BookDetailRepository(AppdataSource.getRepository(BookDetail))
-    ),
-    new BorrowedHistoryService(
-      new BorrowedHistoryRepository(
-        AppdataSource.getRepository(BorrowedHistory)
-      )
-    ),
-    new EmployeeService(
-      new EmployeeRepository(AppdataSource.getRepository(Employee)),
-      new DepartmentService(
-        new DepartmentRepository(AppdataSource.getRepository(Department))
-      )
+    new BookService(
+        new BookRepository(AppdataSource.getRepository(Book)),
+        new ShelfService(new ShelfRepository(AppdataSource.getRepository(Shelf))),
+        new BookDetailsService(new BookDetailRepository(AppdataSource.getRepository(BookDetail))),
+        new BorrowedHistoryService(new BorrowedHistoryRepository(AppdataSource.getRepository(BorrowedHistory))),
+        new EmployeeService(
+            new EmployeeRepository(AppdataSource.getRepository(Employee)),
+            new DepartmentService(new DepartmentRepository(AppdataSource.getRepository(Department)))
+        )
     )
-  )
 );
 const booksRouter = booksController.router;
 export default booksRouter;

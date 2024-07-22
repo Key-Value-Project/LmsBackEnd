@@ -12,13 +12,11 @@ class BookRepository {
 
     save = async (data: Book) => await this.bookRepository.save(data);
 
-    softDelete=async(id:string)=> await this.bookRepository.softDelete({id})
-    
+    softDelete = async (id: string) => await this.bookRepository.softDelete({ id });
 
-    update=async(id:string,book:Book)=>{
-    await this.bookRepository.update({id},book);
-    return this.find({id})
+    update = async (id: string, book: Book) => {
+        await this.bookRepository.update({ id }, book);
+        return this.find({ id });
     };
-
 }
 export default BookRepository;
