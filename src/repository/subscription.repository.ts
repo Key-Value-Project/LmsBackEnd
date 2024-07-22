@@ -17,5 +17,14 @@ class SubscriptionRepository {
     find = async (filter: Partial<Subscription>): Promise<Subscription | null> => {
         return this.subscriptionRepository.findOne({where:filter, relations: ["user", "bookDetail"]})
     }
+
+    toggleNotify = async (isbn: number, user_id: number): Promise<Subscription | null> => {
+        let subscription =  await this.find({bookDetail:{isbn:isbn},user:{id:user_id}})
+        subscription.sent_request = !subscription.sent_request
+        let id = subscription.id
+        this.subscriptionRepository.update({id},subscription)
+        return subscription
+
+    }
 }
 export default SubscriptionRepository

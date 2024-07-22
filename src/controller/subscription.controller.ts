@@ -8,6 +8,7 @@ class SubscriptionController {
     this.router = express.Router();
     this.router.post("/", authorize, this.subscribeBook);
     this.router.delete("/", authorize, this.unsubscribeBook)
+    this.router.patch("/", authorize, this.toggleNotify)
   }
 
   subscribeBook = async (
@@ -34,6 +35,18 @@ class SubscriptionController {
     const user_id = req.id
     const data = await this.subscriptionService.unsubscribeBook(isbn, user_id)
     res.json(data)
+  }
+
+  toggleNotify = async (
+    req: RequestWithUser,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const {isbn} = req.body
+    const user_id = req.id
+    const data = await this.subscriptionService.toggleNotification(isbn, user_id)
+    res.json(data)
+
   }
 }
 export default SubscriptionController;
