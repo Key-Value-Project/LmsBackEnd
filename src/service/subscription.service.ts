@@ -54,15 +54,19 @@ class SubscriptionService {
   getSubscribedBookStatus = async (user_id: number) => {
    
     const isbn = await this.subscriptionRepository.getIsbnFromUserId(user_id)
-    const books = await this.bookRepository.findAll({bookDetail:{isbn},isborrow:false})
+    let books = await this.bookRepository.findAll({bookDetail:{isbn},isborrow:false})
+    console.log(books)
+
     return books
   }
 
-  getBookReturnRequestStatus = async (user_id: number) => {
+  getMessageRequests = async (user_id: number) => {
     let borrowedBook = await this.borrowedHistoryService.findAllBooksBorrowedByUser(Number(user_id))
     const bookId = borrowedBook.book.id
      let borrowedBookDetails = await this.bookService.getBookDetailsById(bookId)
-    return borrowedBookDetails
+     const isbn = borrowedBookDetails.isbn
+     let messageRequests = this.subscriptionRepository.find({bookDetail:{isbn: isbn}, sent_request:true})
+    return messageRequests
   }
 }
 export default SubscriptionService;
