@@ -26,7 +26,7 @@ class BooksController {
         this.router.delete('/delete/:id', authorize, this.deleteBook);
     }
 
-    uploadFile = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public uploadFile = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
             if (!req.file) {
                 throw new HttpException(400, 'No file uploaded', ['Please upload a file']);
@@ -39,7 +39,7 @@ class BooksController {
         }
     };
 
-    borrowBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public borrowBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
             const { isbn, shelf_id } = req.body;
             const user_id = req.id;
@@ -55,7 +55,7 @@ class BooksController {
         }
     };
 
-    returnBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public returnBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
             const { isbn, shelf_id } = req.body;
             const user_id = req.id;
@@ -71,7 +71,7 @@ class BooksController {
         }
     };
 
-    getBorrowHistory = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public getBorrowHistory = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
             const user_id = req.id;
             const data = await this.bookService.getBorrowedBooks(user_id);
@@ -81,12 +81,12 @@ class BooksController {
         }
     };
 
-    getAllBooks = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public getAllBooks = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         const data = await this.bookService.getAllBooks();
         res.json(data);
     };
 
-    createBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+    public createBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
             Permission.userPermission(request, [Role.HR, Role.ADMIN], ['You are not authorized to create books']);
             const bookDto = plainToInstance(CreateBookDto, request.body);
@@ -107,7 +107,7 @@ class BooksController {
         }
     };
 
-    deleteBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+    public deleteBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
             Permission.userPermission(request, [Role.HR, Role.ADMIN], ['You are not authorized to delete books']);
             const id = request.params.id;

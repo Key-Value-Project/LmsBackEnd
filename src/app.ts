@@ -8,6 +8,7 @@ import cors from 'cors';
 import bookDetailRouter from './routes/bookDetail.routes';
 import booksRouter from './routes/books.routes';
 import ShelfRouter from './routes/shelf.routes';
+import analyticsRouter from './routes/analytics.routes';
 
 const server = express();
 server.use(loggerMiddleware);
@@ -24,6 +25,7 @@ server.use('/department', departmentRouter);
 server.use('/book-details', bookDetailRouter);
 server.use('/books', booksRouter);
 server.use('/shelf', ShelfRouter);
+server.use('/analytics', analyticsRouter);
 
 server.get('/', (req, res) => {
     res.send('Hello World');

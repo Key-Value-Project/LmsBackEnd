@@ -2,10 +2,6 @@ import { IsBoolean, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class
 
 export class CreateBookDto {
     @IsNotEmpty()
-    @IsBoolean()
-    isborrow: boolean;
-
-    @IsNotEmpty()
     @IsString()
     shelf_id: string;
 
