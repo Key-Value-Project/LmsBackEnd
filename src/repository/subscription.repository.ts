@@ -8,7 +8,6 @@ class SubscriptionRepository {
     }
     
     softRemove = async (subscription: Subscription): Promise<Subscription> => {
-		// const subscription = await this.find({bookDetail:{isbn},user:{id:user_id}});
 		if (subscription) {
 			await this.subscriptionRepository.softRemove(subscription);
 		}
@@ -16,7 +15,9 @@ class SubscriptionRepository {
     }
 
     findAll = async (filter: Partial<Subscription>): Promise<Subscription[] | null> => {
-        return this.subscriptionRepository.find({relations: ["user", "bookDetail"]})
+       let  result = await this.subscriptionRepository.find({where: filter, relations: ["user", "bookDetail"]})
+       console.log(result)
+        return result
     }
 
     find = async (filter: Partial<Subscription>): Promise<Subscription | null> => {

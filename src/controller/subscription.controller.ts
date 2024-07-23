@@ -75,19 +75,22 @@ class SubscriptionController {
     res: express.Response,
     next: express.NextFunction
   ) => {
+    let messages =[]
     const user_id = req.id
-    const data = await this.subscriptionService.getMessageRequests(user_id)
-    let message: string
-    try{
-      const userName = data.user.name
-    const book = data.bookDetail.title
-    message = `You have a return request from ${userName} for book ${book}`
+    let userName: string
+    let book: string
+    let newMessage: string
+    const allData = await this.subscriptionService.getMessageRequests(user_id)
+      for(let data of allData) {
+
+        userName = data[0].user.name
+        book = data[0].bookDetail.title
+
+        newMessage = `You have a return request from ${userName} for book ${book}`
+        messages.push(newMessage)
     }
-    catch{
-      message = "you have no requests"
-    }
-    
-    res.status(200).json({message: message})
+  res.status(200).json({message: messages})
   }
+
 }
 export default SubscriptionController;

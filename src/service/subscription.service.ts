@@ -30,7 +30,6 @@ class SubscriptionService {
     );
     return addSubscription
 
-    // TODO find status and then revert it
   };
 
   unsubscribeBook = async (isbn: number, user_id: number) => {
@@ -43,39 +42,32 @@ class SubscriptionService {
     const subscription = await this.subscriptionRepository.toggleNotify(isbn, user_id)
     return subscription
   }
-
-  // getIsbnFromUserId = async (user_id: number) => {
-  //   const isbn = await this.subscriptionRepository.getIsbnFromUserId(user_id)
-  // }
-
-  // isBookAvailable = async (isbn: number) => {
-  //   const books = await this.bookRepository.findAll(isbn)
-  // }
-
   getSubscribedBookStatus = async (user_id: number): Promise<Book[]> => {
    
     let isbns = await this.subscriptionRepository.getIsbnFromUserId(user_id)
-    // isbns =[...new Set(isbns)]
-    // console.log(isbns)
     let books =[]
-    // books = isbns.map(async (isbn) => await this.bookRepository.findAll({bookDetail:{isbn: isbn},isborrow:false}))
     console.log(isbns)
     for (let isbn of isbns) {
       let receivedBooks = await this.bookRepository.findAll({bookDetail:{isbn: isbn},isborrow:false},["bookDetail"])
        books.push(...receivedBooks)
     }
-    // books = [...new Set(books)]
-    console.log(books)
 
     return books
   }
 
   getMessageRequests = async (user_id: number) => {
-    let borrowedBook = await this.borrowedHistoryService.findAllBooksBorrowedByUser(Number(user_id))
-    const bookId = borrowedBook.book.id
-     let borrowedBookDetails = await this.bookService.getBookDetailsById(bookId)
+    let borrowedBooks = await this.borrowedHistoryService.findAllBooksBorrowedByUser(Number(user_id))
+      let messageRequest
+    let messageRequests = []
+    let bookId: string
+    for (let borrowedBook of borrowedBooks){
+      bookId = borrowedBook.book.id
+      let borrowedBookDetails = await this.bookService.getBookDetailsById(bookId)
      const isbn = borrowedBookDetails.isbn
-     let messageRequests = this.subscriptionRepository.find({bookDetail:{isbn: isbn}, sent_request:true})
+      messageRequest = await this.subscriptionRepository.findAll({bookDetail:{isbn: isbn}, sent_request:true})
+     messageRequests.push(messageRequest)
+
+    }
     return messageRequests
   }
 }
