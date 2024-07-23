@@ -23,7 +23,7 @@ class BookDetailsService {
         return finalBookDetails;
     };
 
-    getAllBookDetailsWithBookId = async (isbn) => {
+    getAllBookDetailsWithBookId = async (isbn: number) => {
         const bookdetails = await this.bookDetailRepository.findAll({ isbn }, ['books', 'books.shelf']);
         const updatedBookDetails = bookdetails.map((bookDetail) => {
             const isAvailable = bookDetail.books.some((book) => !book.isborrow);

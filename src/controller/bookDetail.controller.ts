@@ -35,7 +35,7 @@ class BookDetailController {
     public getBookLocationWithBookIsbn = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
             const { isbn } = request.params;
-            const bookDetails = await this.bookDetailsService.getAllBookDetailsWithBookId(isbn);
+            const bookDetails = await this.bookDetailsService.getAllBookDetailsWithBookId(Number(isbn));
             if (!bookDetails || bookDetails.length === 0) {
                 return next(new HttpException(404, 'Book not found'));
             }
