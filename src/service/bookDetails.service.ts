@@ -23,7 +23,17 @@ class BookDetailsService {
         return finalBookDetails;
     };
 
-    getAllBookDetailsWithBookId = async (isbn) => await this.bookDetailRepository.findAll({ isbn }, ['books', 'books.shelf']);
+    getAllBookDetailsWithBookId = async (isbn) => {
+        const bookdetails = await this.bookDetailRepository.findAll({ isbn }, ['books', 'books.shelf']);
+        const updatedBookDetails = bookdetails.map((bookDetail) => {
+            const isAvailable = bookDetail.books.some((book) => !book.isborrow);
+            return {
+                ...bookDetail,
+                status: isAvailable ? 'Available' : 'Not-Available',
+            };
+        });
+        return updatedBookDetails;
+    };
 
     getBookDetailsById = async (isbn: number) => await this.bookDetailRepository.find({ isbn });
 
