@@ -7,8 +7,9 @@ import { BorrowBookDto, CreateBookDto, UpdateBookDto } from '../dto/book.dto';
 import Permission from '../utils/permission.roles';
 import Role from '../utils/role.enum';
 import HttpException from '../execptions/http.exceptions';
-import { validate } from 'class-validator';
 import extractValidationErrors from '../utils/extractValidationErrors';
+import { validate } from 'class-validator';
+import upload from '../utils/fileUpload';
 
 class BooksController {
     public router: express.Router;
@@ -20,9 +21,23 @@ class BooksController {
         this.router.post('/borrow', authorize, this.borrowBook);
         this.router.post('/return', authorize, this.returnBook);
         this.router.post('/create', authorize, this.createBook);
+        this.router.post('/upload', authorize, upload.single('file'), this.uploadFile); // New route for file upload
         this.router.patch('/update/:id', authorize, this.updateBook);
         this.router.delete('/delete/:id', authorize, this.deleteBook);
     }
+
+    uploadFile = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+        try {
+            if (!req.file) {
+                throw new HttpException(400, 'No file uploaded', ['Please upload a file']);
+            }
+            // Process the uploaded file here
+            const data = await this.bookService.uploadBooksFromFile(req.file);
+            res.json(data);
+        } catch (err) {
+            next(err);
+        }
+    };
 
     borrowBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {

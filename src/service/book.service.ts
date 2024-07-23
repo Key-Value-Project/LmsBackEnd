@@ -8,9 +8,9 @@ import EmployeeService from './employee.service';
 import Shelf from '../entity/shelves.entity';
 import HttpException from '../execptions/http.exceptions';
 import dataSource from '../db/data-source';
-import { BorrowBookDto, CreateBookDto, UpdateBookDto } from '../dto/book.dto';
+import { BorrowBookDto, CreateBookDto, UpdateBookDto, UploadBookDto } from '../dto/book.dto';
 import BookDetail from '../entity/bookDetail.entity';
-import { IsNull } from 'typeorm';
+import ExcelJS from 'exceljs';
 
 class BookService {
     constructor(
@@ -20,6 +20,64 @@ class BookService {
         private borrowedHistoryService: BorrowedHistoryService,
         private employeeService: EmployeeService
     ) {}
+
+    uploadBooksFromFile = async (file: Express.Multer.File) => {
+        if (!file) {
+            throw new HttpException(400, 'File Missing', ['Please upload a file']);
+        }
+        if (file.buffer.length === 0) {
+            throw new HttpException(400, 'Empty file', ['Please upload a valid file']);
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(file.buffer);
+        const worksheet = workbook.worksheets[0];
+
+        const jsonData: UploadBookDto[] = [];
+        let isbnColumnIndex: number;
+        let codeColumnIndex: number;
+
+        worksheet.getRow(1).eachCell((cell, colNumber) => {
+            if (cell.value.toString().toLowerCase() === 'isbn') {
+                isbnColumnIndex = colNumber;
+            } else if (cell.value.toString().toLowerCase() === 'code') {
+                codeColumnIndex = colNumber;
+            }
+        });
+
+        if (!isbnColumnIndex || !codeColumnIndex) {
+            throw new HttpException(400, 'Invalid file', ['File must contain ISBN and Code columns']);
+        }
+
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) {
+                return; // Skip header row
+            }
+            const bookData: UploadBookDto = {
+                isbn: parseInt(row.getCell(isbnColumnIndex).value.toString()),
+                code: row.getCell(codeColumnIndex).value.toString(),
+            };
+            jsonData.push(bookData);
+        });
+
+        const queryRunner = dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            let allBooksAdded = [];
+            for (const book of jsonData) {
+                const bookData = await this.uploadBook(book);
+                allBooksAdded.push(bookData);
+            }
+            await queryRunner.commitTransaction();
+            return allBooksAdded;
+        } catch (e) {
+            await queryRunner.rollbackTransaction();
+            console.error('Failed to upload books:', e);
+            return new HttpException(500, 'Internal Server Error', ['Failed to upload books']);
+        }
+    };
 
     borrowBook = async (bookDto: BorrowBookDto) => {
         try {
@@ -148,6 +206,22 @@ class BookService {
             throw new HttpException(404, 'Not found', ['Book not found in the database']);
         }
 
+        const newbook = new Book();
+        newbook.isborrow = false;
+        newbook.shelf = shelfData;
+        newbook.bookDetail = bookDetail;
+        return this.bookRepository.save(newbook);
+    };
+
+    uploadBook = async (book: UploadBookDto) => {
+        const bookDetail: BookDetail = await this.bookDetailsService.getBookDetailsById(book.isbn);
+        if (!bookDetail) {
+            throw new HttpException(404, 'Not found', ['Book not found in the database']);
+        }
+        const shelfData: Shelf = await this.shelfService.getShelfByCode(book.code);
+        if (!shelfData) {
+            throw new HttpException(404, 'Not found', ['Shelf not found in the database']);
+        }
         const newbook = new Book();
         newbook.isborrow = false;
         newbook.shelf = shelfData;

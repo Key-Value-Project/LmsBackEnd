@@ -10,6 +10,8 @@ class ShelfService {
 
     getShelfById = async (id: string) => await this.shelfRepository.find({ id });
 
+    getShelfByCode = async (code: string) => await this.shelfRepository.find({ code });
+
     createShelf = async (shelf: CreateShelfDto) => {
         const newshelf = new Shelf();
         newshelf.code = shelf.code;

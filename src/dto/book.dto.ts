@@ -14,6 +14,16 @@ export class CreateBookDto {
     isbn: number;
 }
 
+export class UploadBookDto {
+    @IsNotEmpty()
+    @IsNumber()
+    isbn: number;
+
+    @IsNotEmpty()
+    @IsString()
+    code: string;
+}
+
 export class UpdateBookDto {
     @IsNotEmpty()
     @IsString()
