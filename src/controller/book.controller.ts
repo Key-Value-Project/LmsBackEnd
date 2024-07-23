@@ -32,7 +32,8 @@ class BooksController {
                 throw new HttpException(400, 'No file uploaded', ['Please upload a file']);
             }
             // Process the uploaded file here
-            res.json({ message: 'File uploaded successfully', file: req.file });
+            const data = await this.bookService.uploadBooksFromFile(req.file);
+            res.json(data);
         } catch (err) {
             next(err);
         }
