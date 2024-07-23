@@ -9,7 +9,7 @@
         "test-coverage": "jest --coverage",
         "prettify": "prettier --write .",
         "start": "node dist/src/app.js",
-        "dev": "nodemon dist/src/app.js",
+        "dev": "nodemon src/app.ts",
         "build": "rm -rf dist/ && npx tsc",
         "start-server": "npm run prettify && npm run build && npm run start",
         "migration:create": "npm run build && npx typeorm migration:create",

@@ -10,6 +10,7 @@ import HttpException from '../execptions/http.exceptions';
 import dataSource from '../db/data-source';
 import { BorrowBookDto, CreateBookDto, UpdateBookDto } from '../dto/book.dto';
 import BookDetail from '../entity/bookDetail.entity';
+import { IsNull } from 'typeorm';
 
 class BookService {
     constructor(
@@ -61,6 +62,7 @@ class BookService {
                 );
                 let updateBook = book;
                 updateBook.isborrow = true;
+                updateBook.shelf = null;
                 const updateBookStatus = await this.bookRepository.save(updateBook);
                 console.log(updateBookStatus);
                 await queryRunner.commitTransaction();
