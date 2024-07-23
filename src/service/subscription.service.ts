@@ -1,3 +1,4 @@
+import Book from "../entity/book.entity";
 import Subscription from "../entity/subscription.entity";
 import BookRepository from "../repository/books.repository";
 import SubscriptionRepository from "../repository/subscription.repository";
@@ -51,10 +52,19 @@ class SubscriptionService {
   //   const books = await this.bookRepository.findAll(isbn)
   // }
 
-  getSubscribedBookStatus = async (user_id: number) => {
+  getSubscribedBookStatus = async (user_id: number): Promise<Book[]> => {
    
-    const isbn = await this.subscriptionRepository.getIsbnFromUserId(user_id)
-    let books = await this.bookRepository.findAll({bookDetail:{isbn},isborrow:false})
+    let isbns = await this.subscriptionRepository.getIsbnFromUserId(user_id)
+    // isbns =[...new Set(isbns)]
+    // console.log(isbns)
+    let books =[]
+    // books = isbns.map(async (isbn) => await this.bookRepository.findAll({bookDetail:{isbn: isbn},isborrow:false}))
+    console.log(isbns)
+    for (let isbn of isbns) {
+      let receivedBooks = await this.bookRepository.findAll({bookDetail:{isbn: isbn},isborrow:false},["bookDetail"])
+       books.push(...receivedBooks)
+    }
+    // books = [...new Set(books)]
     console.log(books)
 
     return books

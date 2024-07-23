@@ -60,8 +60,9 @@ class SubscriptionController {
     const data = await this.subscriptionService.getSubscribedBookStatus(user_id)
     let message : string
     try{
-      const bookNames = data.map((data) => data.bookDetail.title)
-      message = `${bookNames} is now available`
+      let bookNames = data.map((data) => data.bookDetail.title)
+      bookNames = [...new Set(bookNames)]
+      message = `${bookNames} available now`
     }
     catch{
       message = "no updates"

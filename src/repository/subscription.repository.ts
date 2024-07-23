@@ -15,6 +15,10 @@ class SubscriptionRepository {
         return subscription
     }
 
+    findAll = async (filter: Partial<Subscription>): Promise<Subscription[] | null> => {
+        return this.subscriptionRepository.find({relations: ["user", "bookDetail"]})
+    }
+
     find = async (filter: Partial<Subscription>): Promise<Subscription | null> => {
         return this.subscriptionRepository.findOne({where:filter, relations: ["user", "bookDetail"]})
     }
@@ -30,8 +34,9 @@ class SubscriptionRepository {
 
     getIsbnFromUserId = async (user_id: number) => {
 
-        let {bookDetail} = await this.find({user:{id: user_id}},)
-        return bookDetail.isbn
+        let books = await this.findAll({user:{id: user_id}},)
+        let isbns = books.map((book) => book.bookDetail.isbn)
+        return isbns
 
 
     }
