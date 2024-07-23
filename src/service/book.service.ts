@@ -165,10 +165,11 @@ class BookService {
     };
 
     updateBooks = async (id: string, book: UpdateBookDto) => {
-        const newBook = new Book();
-        if (book.isborrow) {
-            newBook.isborrow = book.isborrow;
+        const currentBook = await this.bookRepository.find({ id });
+        if (currentBook.isborrow === true) {
+            throw new HttpException(400, 'Bad Request', ['Book is borrowed']);
         }
+        const newBook = new Book();
         if (book.shelf_id) {
             const shelfData: Shelf = await this.shelfService.getShelfById(book.shelf_id);
             if (!shelfData) {
