@@ -9,10 +9,10 @@ class Subscription extends AbstractEntity {
     sent_request: boolean;
 
     @ManyToOne(() => Employee, (employee) => employee.subscriptions)
-    user: Employee;
+    user: Employee | Partial<Employee>;
 
     @ManyToOne(() => BookDetail, (bookDetail) => bookDetail.subscriptions)
-    bookDetail: BookDetail;
+    bookDetail: BookDetail | Partial<BookDetail>;
 }
 
 export default Subscription;

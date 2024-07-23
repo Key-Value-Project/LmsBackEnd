@@ -30,6 +30,9 @@ class BorrowedHistoryService {
             return_date: date,
             returnShelf: shelf,
         });
+
+    findAllBooksBorrowedByUser = async (user_id: number) =>
+        this.borrowedHistoryRepository.findAll({ user: { id: user_id }, return_date: null }, ['book']);
 }
 
 export default BorrowedHistoryService;
