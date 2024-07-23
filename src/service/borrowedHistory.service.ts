@@ -11,7 +11,7 @@ class BorrowedHistoryService {
         this.borrowedHistoryRepository.find({ book: { bookDetail: { isbn } }, user: { id: user_id }, return_date: IsNull() }, ['user', 'book']);
 
     getByBorrowedHistoryOfUser = async (user_id: number) =>
-        this.borrowedHistoryRepository.findAll({ user: { id: user_id }, return_date: IsNull() }, ['user', 'book', 'book.bookDetail', 'book.shelf']);
+        this.borrowedHistoryRepository.findAll({ user: { id: user_id } }, ['user', 'book', 'book.bookDetail', 'book.shelf']);
 
     insertBorrowedHistory = async (book: Book, shelf: Shelf, date: Date, expdate: Date, user: Employee) =>
         this.borrowedHistoryRepository.save({
