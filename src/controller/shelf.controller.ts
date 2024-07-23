@@ -78,7 +78,6 @@ class ShelfController {
             const id = request.params.id;
             const shelfDto = plainToInstance(UpdateShelfDto, request.body);
             const errors = await validate(shelfDto);
-
             if (errors.length) {
                 // console.log(errors);
                 const error_list = extractValidationErrors(errors);

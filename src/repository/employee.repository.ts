@@ -23,23 +23,6 @@ class EmployeeRepository {
         return this.employeeRepositry.save(employee);
     };
 
-    // saveWithTransaction = async (employee: Employee): Promise<Employee> => {
-    // 	const queryRunner = this.dataSource.createQueryRunner();
-    // 	await queryRunner.connect();
-    // 	await queryRunner.startTransaction();line1
-    // 	try {
-    // 		const employeeRepositry = this.dataSource.getRepository(Employee);
-    // 		const response = await queryRunner.manager.save(employee);
-    // 		await queryRunner.commitTransaction();
-    // 		return response;
-    // 	} catch (e) {
-    // 		await queryRunner.rollbackTransaction();
-    // 		throw e;
-    // 	} finally {
-    // 		await queryRunner.release();
-    // 	}
-    // };
-
     softDelete = async (id: number): Promise<void> => {
         await this.employeeRepositry.softDelete({ id });
     };
