@@ -1,4 +1,4 @@
-import ShelfRepository from "../repository/shelf.repository";
+import ShelfRepository from '../repository/shelf.repository';
 
 class ShelfService {
     constructor(private shelfRepository: ShelfRepository) {}

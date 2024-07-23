@@ -1,14 +1,14 @@
-import express from "express";
-import BookService from "../service/book.service";
-import { RequestWithUser } from "../utils/requestWithUser";
-import authorize from "../middleware/auth.middleware";
+import express from 'express';
+import BookService from '../service/book.service';
+import { RequestWithUser } from '../utils/requestWithUser';
+import authorize from '../middleware/auth.middleware';
 
 class BooksController {
     public router: express.Router;
     constructor(private bookService: BookService) {
         this.router = express.Router();
-        this.router.post("/borrow", authorize, this.borrowBook);
-        this.router.post("/return", authorize, this.returnBook);
+        this.router.post('/borrow', authorize, this.borrowBook);
+        this.router.post('/return', authorize, this.returnBook);
         // this.router.get("/:isbn", this.getAllbooksByIsbn);
     }
     // getAllbooksByIsbn = async (request: express.Request, response: express.Response, next: express.NextFunction) => {
