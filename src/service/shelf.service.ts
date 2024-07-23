@@ -18,14 +18,21 @@ class ShelfService {
     };
 
     deleteShelf = async (id: string) => {
-        const shelf = await this.shelfRepository.find({ id });
+        const shelf = await this.shelfRepository.find({ id }, ['books']);
         if (!shelf) {
             throw new HttpException(404, 'Not found', ['Shelf not found in the database']);
+        }
+        if (shelf.books.length > 0) {
+            throw new HttpException(400, 'Bad Request', ['Shelf has books']);
         }
         await this.shelfRepository.softDelete(id);
     };
 
     updateShelf = async (id: string, shelf: UpdateShelfDto) => {
+        const currentShelf = await this.shelfRepository.find({ id }, ['books']);
+        if (currentShelf.books.length > 0) {
+            throw new HttpException(400, 'Bad Request', ['Shelf has books']);
+        }
         const newshelf = new Shelf();
         newshelf.code = shelf.code;
         newshelf.location = shelf.location;

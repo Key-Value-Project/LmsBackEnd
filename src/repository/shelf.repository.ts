@@ -3,8 +3,13 @@ import Shelf from '../entity/shelves.entity';
 
 class ShelfRepository {
     constructor(private shelfRepository: Repository<Shelf>) {}
-    findAll = async () => this.shelfRepository.find();
-    find = async (filter: Partial<Shelf>) => this.shelfRepository.findOne({ where: filter });
+
+    findAll = async (filter: any = {}, relationArray: Array<string> = []) =>
+        await this.shelfRepository.find({ where: filter, relations: relationArray });
+
+    find = async (filter: Partial<Shelf>, relationArray: Array<string> = []) =>
+        await this.shelfRepository.findOne({ where: filter, relations: relationArray });
+
     save = async (shelf: Shelf) => {
         const newshelf = await this.shelfRepository.save(shelf);
         return newshelf;

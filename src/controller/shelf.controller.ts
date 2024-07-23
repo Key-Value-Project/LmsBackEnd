@@ -8,6 +8,7 @@ import HttpException from '../execptions/http.exceptions';
 import { plainToInstance } from 'class-transformer';
 import { CreateShelfDto, UpdateShelfDto } from '../dto/shelf.dto';
 import { validate } from 'class-validator';
+import extractValidationErrors from '../utils/extractValidationErrors';
 
 class ShelfController {
     public router: express.Router;
@@ -36,8 +37,11 @@ class ShelfController {
             Permission.userPermission(req, [Role.ADMIN], ['You do not have permission']);
             const shelfDto = plainToInstance(CreateShelfDto, req.body);
             const errors = await validate(shelfDto);
-            if (errors.length > 0) {
-                throw new HttpException(400, 'Validation failed', errors);
+
+            if (errors.length) {
+                // console.log(errors);
+                const error_list = extractValidationErrors(errors);
+                throw new HttpException(400, 'Validation failed', error_list);
             }
             const shelfdetails = await this.shelfService.createShelf(shelfDto);
             res.status(201).send(shelfdetails);
@@ -73,6 +77,12 @@ class ShelfController {
 
             const id = request.params.id;
             const shelfDto = plainToInstance(UpdateShelfDto, request.body);
+            const errors = await validate(shelfDto);
+            if (errors.length) {
+                // console.log(errors);
+                const error_list = extractValidationErrors(errors);
+                throw new HttpException(400, 'Validation failed', error_list);
+            }
             const bookDetails = await this.shelfService.updateShelf(id, shelfDto);
             response.send(bookDetails);
         } catch (err) {

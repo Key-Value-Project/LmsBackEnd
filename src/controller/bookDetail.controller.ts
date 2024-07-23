@@ -8,6 +8,7 @@ import Role from '../utils/role.enum';
 import { plainToInstance } from 'class-transformer';
 import { CreateBookDetailDto } from '../dto/bookDetail.dto';
 import { validate } from 'class-validator';
+import extractValidationErrors from '../utils/extractValidationErrors';
 class BookDetailController {
     public router: express.Router;
 
@@ -64,7 +65,8 @@ class BookDetailController {
             const bookDetailsDto = plainToInstance(CreateBookDetailDto, request.body);
             const errors = await validate(bookDetailsDto);
             if (errors.length > 0) {
-                return next(new HttpException(400, 'Validation failed', errors));
+                const error_list = extractValidationErrors(errors);
+                return next(new HttpException(400, 'Validation failed', error_list));
             }
             const bookDetails = await this.bookDetailsService.createBookDetail(bookDetailsDto);
             response.send(bookDetails);

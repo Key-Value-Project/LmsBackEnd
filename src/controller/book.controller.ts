@@ -7,6 +7,7 @@ import { BorrowBookDto, CreateBookDto, UpdateBookDto } from '../dto/book.dto';
 import Permission from '../utils/permission.roles';
 import Role from '../utils/role.enum';
 import HttpException from '../execptions/http.exceptions';
+import extractValidationErrors from '../utils/extractValidationErrors';
 import { validate } from 'class-validator';
 import upload from '../utils/fileUpload';
 
@@ -89,10 +90,11 @@ class BooksController {
             Permission.userPermission(request, [Role.HR, Role.ADMIN], ['You are not authorized to create books']);
             const bookDto = plainToInstance(CreateBookDto, request.body);
             const errors = await validate(bookDto);
-            if (errors.length > 0) {
-                throw new HttpException(400, 'Validation failed', errors);
+            if (errors.length) {
+                // console.log(errors);
+                const error_list = extractValidationErrors(errors);
+                throw new HttpException(400, 'Validation failed', error_list);
             }
-
             const bookDetails = await this.bookService.createBook(bookDto);
             response.send(bookDetails);
         } catch (err) {
@@ -125,8 +127,10 @@ class BooksController {
             const id = request.params.id;
             const bookDto = plainToInstance(UpdateBookDto, request.body);
             const errors = await validate(bookDto);
-            if (errors.length > 0) {
-                throw new HttpException(400, 'Validation failed', errors);
+            if (errors.length) {
+                // console.log(errors);
+                const error_list = extractValidationErrors(errors);
+                throw new HttpException(400, 'Validation failed', error_list);
             }
             const bookDetails = await this.bookService.updateBooks(id, bookDto);
             response.send(bookDetails);

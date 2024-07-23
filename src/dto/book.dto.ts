@@ -10,27 +10,23 @@ export class CreateBookDto {
     shelf_id: string;
 
     @IsNotEmpty()
-    @IsString()
+    @IsNumber()
     isbn: number;
 }
 
 export class UpdateBookDto {
     @IsNotEmpty()
-    @IsBoolean()
-    isborrow?: boolean;
-
-    @IsNotEmpty()
     @IsString()
     shelf_id?: string;
 
     @IsNotEmpty()
-    @IsString()
+    @IsNumber()
     isbn?: number;
 }
 
 export class BorrowBookDto {
     @IsNotEmpty()
-    @IsString()
+    @IsNumber()
     isbn: number;
 
     @IsNotEmpty()
