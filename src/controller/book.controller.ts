@@ -10,7 +10,6 @@ import HttpException from '../execptions/http.exceptions';
 import extractValidationErrors from '../utils/extractValidationErrors';
 import { validate } from 'class-validator';
 import upload from '../utils/fileUpload';
-import { permission } from 'process';
 
 class BooksController {
     public router: express.Router;

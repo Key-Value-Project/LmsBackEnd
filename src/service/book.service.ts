@@ -8,9 +8,14 @@ import EmployeeService from './employee.service';
 import Shelf from '../entity/shelves.entity';
 import HttpException from '../execptions/http.exceptions';
 import dataSource from '../db/data-source';
-import { BorrowBookDto, CreateBookDto, UpdateBookDto, UploadBookDto } from '../dto/book.dto';
+import { BorrowBookDto, CreateBookDto, UpdateBookDto, UploadBookDto, UploadBookDtoExcel } from '../dto/book.dto';
 import BookDetail from '../entity/bookDetail.entity';
 import ExcelJS from 'exceljs';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import extractValidationErrors from '../utils/extractValidationErrors';
+import { CreateBookDetailDto } from '../dto/bookDetail.dto';
+import BorrowedHistory from '../entity/borrowedHistory.entity';
 
 class BookService {
     constructor(
@@ -33,48 +38,104 @@ class BookService {
         await workbook.xlsx.load(file.buffer);
         const worksheet = workbook.worksheets[0];
 
-        const jsonData: UploadBookDto[] = [];
+        const jsonData: UploadBookDtoExcel[] = [];
         let isbnColumnIndex: number;
         let codeColumnIndex: number;
+        let titleColumnIndex: number;
+        let authorColumnIndex: number;
+        let descriptionColumnIndex: number;
 
         worksheet.getRow(1).eachCell((cell, colNumber) => {
             if (cell.value.toString().toLowerCase() === 'isbn') {
                 isbnColumnIndex = colNumber;
             } else if (cell.value.toString().toLowerCase() === 'code') {
                 codeColumnIndex = colNumber;
+            } else if (cell.value.toString().toLowerCase() === 'title') {
+                titleColumnIndex = colNumber;
+            } else if (cell.value.toString().toLowerCase() === 'author') {
+                authorColumnIndex = colNumber;
+            } else if (cell.value.toString().toLowerCase() === 'description') {
+                descriptionColumnIndex = colNumber;
             }
         });
 
-        if (!isbnColumnIndex || !codeColumnIndex) {
-            throw new HttpException(400, 'Invalid file', ['File must contain ISBN and Code columns']);
+        if (!isbnColumnIndex || !codeColumnIndex || !titleColumnIndex || !authorColumnIndex || !descriptionColumnIndex) {
+            throw new HttpException(400, 'Invalid file', ['File must contain ISBN ,Code,title,author and description columns']);
         }
 
-        worksheet.eachRow((row, rowNumber) => {
+        worksheet.eachRow(async (row, rowNumber) => {
             if (rowNumber === 1) {
                 return; // Skip header row
             }
-            const bookData: UploadBookDto = {
+            const bookData = plainToInstance(UploadBookDtoExcel, {
                 isbn: parseInt(row.getCell(isbnColumnIndex).value.toString()),
                 code: row.getCell(codeColumnIndex).value.toString(),
-            };
+                title: row.getCell(titleColumnIndex).value.toString(),
+                author: row.getCell(authorColumnIndex).value.toString(),
+                description: row.getCell(descriptionColumnIndex).value.toString(),
+            });
+            const errors = await validate(bookData);
+            if (errors.length > 0) {
+                const error_list = extractValidationErrors(errors);
+                throw new HttpException(400, 'Validation failed', error_list);
+            }
             jsonData.push(bookData);
         });
-
-        const queryRunner = dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
+        let allBooksAdded;
         try {
-            let allBooksAdded = [];
-            for (const book of jsonData) {
-                const bookData = await this.uploadBook(book);
-                allBooksAdded.push(bookData);
-            }
-            await queryRunner.commitTransaction();
+            await dataSource.manager.transaction(async (transactionalEntityManager) => {
+                allBooksAdded = [];
+                for (const book of jsonData) {
+                    const bookDetails: BookDetail = await this.bookDetailsService.getBookDetailsById(book.isbn);
+                    if (!bookDetails) {
+                        const shelfData: Shelf = await this.shelfService.getShelfByCode(book.code);
+                        if (!shelfData) {
+                            throw new HttpException(404, 'Not found', ['Shelf not found in the database']);
+                        }
+
+                        const newbookDetailDto = plainToInstance(CreateBookDetailDto, {
+                            isbn: book.isbn,
+                            title: book.title,
+                            author: book.author,
+                            description: book.description,
+                        });
+                        const newbookDetail = await transactionalEntityManager.save(BookDetail, {
+                            isbn: newbookDetailDto.isbn,
+                            title: newbookDetailDto.title,
+                            author: newbookDetailDto.author,
+                            description: newbookDetailDto.description,
+                        });
+
+                        const bookData = await transactionalEntityManager.save(Book, {
+                            isborrow: false,
+                            shelf: shelfData,
+                            bookDetail: newbookDetail,
+                        });
+                        console.log('uploaded book', bookData);
+                    } else {
+                        if (bookDetails.author !== book.author || bookDetails.title !== book.title || bookDetails.description !== book.description) {
+                            throw new HttpException(400, 'Invalid file', ['Book details are not matching with ISBN']);
+                        }
+                        const shelfData: Shelf = await this.shelfService.getShelfByCode(book.code);
+                        if (!shelfData) {
+                            throw new HttpException(404, 'Not found', ['Shelf not found in the database']);
+                        }
+
+                        const bookData = await transactionalEntityManager.save(Book, {
+                            isborrow: false,
+                            shelf: shelfData,
+                            bookDetail: bookDetails,
+                        });
+                        console.log('uploaded book', bookData);
+                    }
+                }
+            });
             return allBooksAdded;
         } catch (e) {
-            await queryRunner.rollbackTransaction();
             console.error('Failed to upload books:', e);
+            if (e instanceof HttpException) {
+                throw e;
+            }
             return new HttpException(500, 'Internal Server Error', ['Failed to upload books']);
         }
     };
@@ -103,27 +164,25 @@ class BookService {
         if (!user) {
             throw new HttpException(404, 'Not found', ['User not found']);
         }
+        let updateBookBorrowedHistory;
 
-        const queryRunner = dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
-        try {
-            const updateBookBorrowedHistory = await this.borrowedHistoryService.insertBorrowedHistory(book, shelf, today, expectedReturnDate, user);
+        await dataSource.manager.transaction(async (transactionalEntityManager) => {
+            updateBookBorrowedHistory = await transactionalEntityManager.save(BorrowedHistory, {
+                book,
+                borrowedShelf: shelf,
+                borrowed_at: today,
+                expected_return_date: expectedReturnDate,
+                return_date: null,
+                returnShelf: null,
+                user,
+            });
             let updateBook = book;
             updateBook.isborrow = true;
             updateBook.shelf = null;
-            const updateBookStatus = await this.bookRepository.save(updateBook);
+            const updateBookStatus = await transactionalEntityManager.save(Book, updateBook);
             console.log(updateBookStatus);
-            await queryRunner.commitTransaction();
-            return updateBookBorrowedHistory;
-        } catch (transactionError) {
-            console.log(transactionError);
-            await queryRunner.rollbackTransaction();
-            return transactionError;
-        } finally {
-            await queryRunner.release();
-        }
+        });
+        return updateBookBorrowedHistory;
     };
 
     returnBook = async (bookDTo: BorrowBookDto) => {
@@ -147,21 +206,20 @@ class BookService {
         }
         toUpdateBook.isborrow = false;
         toUpdateBook.shelf = shelf;
-
-        const queryRunner = dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
+        let updateborrowedHistoryRecord;
         try {
-            const updateBook = await this.bookRepository.save(toUpdateBook);
-            const updateborrowedHistoryRecord = await this.borrowedHistoryService.updateBorrowedHistory(borrowedHistoryRecord.id, shelf, return_date);
+            await dataSource.manager.transaction(async (transactionalEntityManager) => {
+                const updateBook = await transactionalEntityManager.save(Book, toUpdateBook);
+                updateborrowedHistoryRecord = await transactionalEntityManager.save(BorrowedHistory, {
+                    id: borrowedHistoryRecord.id,
+                    return_date,
+                    returnShelf: shelf,
+                });
+            });
             return updateborrowedHistoryRecord;
         } catch (e) {
-            await queryRunner.rollbackTransaction();
             console.error('Failed to return book:', e);
             return new HttpException(500, 'Internal Server Error', ['Failed to return book']);
-        } finally {
-            await queryRunner.release();
         }
     };
 
@@ -206,6 +264,7 @@ class BookService {
         newbook.isborrow = false;
         newbook.shelf = shelfData;
         newbook.bookDetail = bookDetail;
+        console.log('creating new book');
         return this.bookRepository.save(newbook);
     };
 

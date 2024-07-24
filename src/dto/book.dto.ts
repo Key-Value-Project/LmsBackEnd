@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class CreateBookDto {
     @IsNotEmpty()
@@ -23,7 +23,19 @@ export class UploadBookDto {
     @IsString()
     code: string;
 }
+export class UploadBookDtoExcel extends UploadBookDto {
+    @IsNotEmpty()
+    @IsString()
+    title: string;
 
+    @IsNotEmpty()
+    @IsString()
+    author: string;
+
+    @IsNotEmpty()
+    @IsString()
+    description: string;
+}
 export class UpdateBookDto {
     @IsNotEmpty()
     @IsString()
