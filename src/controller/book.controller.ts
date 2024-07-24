@@ -46,7 +46,8 @@ class BooksController {
             const borrowBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
             const errors = await validate(borrowBookDto);
             if (errors.length > 0) {
-                throw new HttpException(400, 'Validation failed', errors);
+                const error_list = extractValidationErrors(errors);
+                throw new HttpException(400, 'Validation failed', error_list);
             }
             const data = await this.bookService.borrowBook(borrowBookDto);
             res.json(data);
@@ -62,7 +63,8 @@ class BooksController {
             const returnBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
             const errors = await validate(returnBookDto);
             if (errors.length > 0) {
-                throw new HttpException(400, 'Validation failed', errors);
+                const error_list = extractValidationErrors(errors);
+                throw new HttpException(400, 'Validation failed', error_list);
             }
             const data = await this.bookService.returnBook(returnBookDto);
             res.json(data);
