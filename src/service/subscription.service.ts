@@ -42,10 +42,12 @@ class SubscriptionService {
         const subscription = await this.subscriptionRepository.toggleNotify(isbn, user_id);
         return subscription;
     };
+
+    getSubscriptions = async (user_id: number) => await this.subscriptionRepository.findAll({ user: { id: user_id } });
+
     getSubscribedBookStatus = async (user_id: number): Promise<Book[]> => {
         let isbns = await this.subscriptionRepository.getIsbnFromUserId(user_id);
         let books = [];
-        console.log(isbns);
         for (let isbn of isbns) {
             let receivedBooks = await this.bookRepository.findAll({ bookDetail: { isbn: isbn }, isborrow: false }, ['bookDetail']);
             books.push(...receivedBooks);
@@ -61,7 +63,6 @@ class SubscriptionService {
         let messageRequest: Subscription[];
         for (let isbn of isbns) {
             messageRequest = await this.subscriptionRepository.findAll({ bookDetail: { isbn: isbn }, sent_request: true });
-            console.log(messageRequest);
             if (messageRequest.length) messageRequests.push(...messageRequest);
         }
         return messageRequests;

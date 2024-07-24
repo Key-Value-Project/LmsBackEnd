@@ -10,6 +10,7 @@ class SubscriptionController {
         this.router.delete('/', authorize, this.unsubscribeBook);
         this.router.patch('/', authorize, this.toggleNotify);
         this.router.get('/', authorize, this.getSubscribedBookStatus);
+        this.router.get('/subscriptions', authorize, this.getSubscriptions);
         this.router.get('/messages', authorize, this.getMessageRequests);
     }
 
@@ -31,6 +32,11 @@ class SubscriptionController {
         const { isbn } = req.body;
         const user_id = req.id;
         const data = await this.subscriptionService.toggleNotification(isbn, user_id);
+        res.status(200).send(data);
+    };
+
+    getSubscriptions = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+        const data = await this.subscriptionService.getSubscriptions(req.id);
         res.status(200).send(data);
     };
 
