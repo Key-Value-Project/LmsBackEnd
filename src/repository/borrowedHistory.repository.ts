@@ -12,96 +12,171 @@ class BorrowedHistoryRepository {
 
     getMostBorrowedBooks = async () => {
         return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowed_history')
-            .select('borrowed_history.book_id', 'book_id')
-            .addSelect('COUNT(borrowed_history.book_id)', 'borrowCount')
-            .where('borrowed_history.deleted_at IS NULL')
-            .groupBy('borrowed_history.book_id')
-            .orderBy('COUNT(borrowed_history.book_id)', 'DESC')
+            .createQueryBuilder('borrowedHistory')
+            .leftJoinAndSelect('borrowedHistory.book', 'book')
+            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
+            .select(['bookDetail.isbn', 'bookDetail.title'])
+            .addSelect('COUNT(bookDetail.isbn)', 'borrowCount')
+            .where('borrowedHistory.deleted_at IS NULL')
+            .groupBy('bookDetail.isbn')
+            .orderBy('COUNT(bookDetail.isbn)', 'DESC')
             .limit(10)
             .getRawMany();
     };
 
     getPopularGenres = async () => {
         return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowedHistory')
-            .leftJoinAndSelect('borrowedHistory.book', 'book')
-            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
-            .select('bookDetail.genreId', 'genreId')
-            .addSelect('COUNT(bookDetail.genreId)', 'genreCount')
-            .groupBy('bookDetail.genreId')
-            .orderBy('genreCount', 'DESC')
+            .createQueryBuilder('borrowed_history')
+            .leftJoin('borrowed_history.book', 'book')
+            .leftJoin('book.bookDetail', 'bookDetail')
+            .select('bookDetail.genre_id', 'genre_id')
+            .addSelect('COUNT(bookDetail.genre_id)', 'genre_count')
+            .groupBy('bookDetail.genre_id')
+            .orderBy('genre_count', 'DESC')
             .getRawMany();
     };
 
     getUserActivity = async () => {
         return this.borrowedHistoryRepository
             .createQueryBuilder('borrowedHistory')
-            .select('borrowedHistory.userId', 'userId')
-            .addSelect('COUNT(borrowedHistory.userId)', 'activityCount')
-            .groupBy('borrowedHistory.userId')
-            .orderBy('activityCount', 'DESC')
+            .select('borrowedHistory.user_id', 'user_id')
+            .addSelect('COUNT(borrowedHistory.user_id)', 'activityCount')
+            .groupBy('borrowedHistory.user_id')
+            .orderBy('COUNT(borrowedHistory.user_id)', 'DESC')
             .getRawMany();
     };
 
     getBorrowingReport = async () => {
-        return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowedHistory')
-            .leftJoinAndSelect('borrowedHistory.book', 'book')
-            .leftJoinAndSelect('borrowedHistory.user', 'user')
-            .select(['borrowedHistory.id', 'borrowedHistory.borrowed_at', 'borrowedHistory.returned_at', 'book.title', 'user.name'])
-            .orderBy('borrowedHistory.borrowed_at', 'DESC')
+        const data = await this.borrowedHistoryRepository
+            .createQueryBuilder('borrowed_history')
+            .leftJoinAndSelect('borrowed_history.book', 'book')
+            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
+            .leftJoinAndSelect('borrowed_history.user', 'user')
+            .select([
+                'borrowed_history.id',
+                'borrowed_history.borrowed_at',
+                'borrowed_history.return_date',
+                'book.id',
+                'bookDetail.isbn',
+                'bookDetail.title',
+                'bookDetail.description',
+                'user.name',
+            ])
+            .orderBy('borrowed_history.borrowed_at', 'DESC')
             .getMany();
+        return data;
     };
 
     getReturnReport = async () => {
         return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowedHistory')
-            .leftJoinAndSelect('borrowedHistory.book', 'book')
-            .leftJoinAndSelect('borrowedHistory.user', 'user')
-            .where('borrowedHistory.returned_at IS NOT NULL')
-            .select(['borrowedHistory.id', 'borrowedHistory.borrowed_at', 'borrowedHistory.returned_at', 'book.title', 'user.name'])
-            .orderBy('borrowedHistory.returned_at', 'DESC')
+            .createQueryBuilder('borrowed_history')
+            .leftJoinAndSelect('borrowed_history.book', 'book')
+            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
+            .leftJoinAndSelect('borrowed_history.user', 'user')
+            .where('borrowed_history.return_date IS NOT NULL')
+            .select([
+                'borrowed_history.id',
+                'borrowed_history.borrowed_at',
+                'borrowed_history.return_date',
+                'book.id',
+                'bookDetail.isbn',
+                'bookDetail.title',
+                'bookDetail.description',
+                'user.name',
+            ])
+            .orderBy('borrowed_history.return_date', 'DESC')
             .getMany();
     };
 
     getOverdueBooksReport = async () => {
         const currentDate = new Date();
         return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowedHistory')
-            .leftJoinAndSelect('borrowedHistory.book', 'book')
-            .leftJoinAndSelect('borrowedHistory.user', 'user')
-            .where('borrowedHistory.returned_at IS NULL')
-            .andWhere('borrowedHistory.due_date < :currentDate', { currentDate })
-            .select(['borrowedHistory.id', 'borrowedHistory.borrowed_at', 'borrowedHistory.due_date', 'book.title', 'user.name'])
-            .orderBy('borrowedHistory.due_date', 'ASC')
+            .createQueryBuilder('borrowed_history')
+            .leftJoinAndSelect('borrowed_history.book', 'book')
+            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
+            .leftJoinAndSelect('borrowed_history.user', 'user')
+            .where('borrowed_history.return_date IS NULL')
+            .andWhere('borrowed_history.expected_return_date < :currentDate', { currentDate })
+            .select([
+                'borrowed_history.id',
+                'borrowed_history.borrowed_at',
+                'borrowed_history.expected_return_date',
+                'book.id',
+                'bookDetail.isbn',
+                'bookDetail.title',
+                'bookDetail.description',
+                'user.name',
+            ])
+            .orderBy('borrowed_history.expected_return_date', 'ASC')
             .getMany();
     };
 
     // user analytics
     getBorrowedBooksByUser = async (userId: number) => {
         return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowedHistory')
-            .where('borrowedHistory.userId = :userId', { userId })
-            .andWhere('borrowedHistory.returnDate IS NULL')
+            .createQueryBuilder('borrowed_history')
+            .leftJoinAndSelect('borrowed_history.book', 'book')
+            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
+            .leftJoinAndSelect('borrowed_history.user', 'user')
+            .where('borrowed_history.user_id = :userId', { userId })
+            .andWhere('borrowed_history.return_date IS NULL')
+            .select([
+                'borrowed_history.id',
+                'borrowed_history.borrowed_at',
+                'borrowed_history.expected_return_date',
+                'book.id',
+                'bookDetail.isbn',
+                'bookDetail.title',
+                'bookDetail.description',
+                'user.name',
+            ])
+            .orderBy('borrowed_history.borrowed_at', 'DESC')
             .getMany();
     };
 
     getReturnedBooksByUser = async (userId: number) => {
         return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowedHistory')
-            .where('borrowedHistory.userId = :userId', { userId })
-            .andWhere('borrowedHistory.returnDate IS NOT NULL')
+            .createQueryBuilder('borrowed_history')
+            .leftJoinAndSelect('borrowed_history.book', 'book')
+            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
+            .leftJoinAndSelect('borrowed_history.user', 'user')
+            .where('borrowed_history.user_id = :userId', { userId })
+            .andWhere('borrowed_history.return_date IS NOT NULL')
+            .select([
+                'borrowed_history.id',
+                'borrowed_history.borrowed_at',
+                'borrowed_history.return_date',
+                'book.id',
+                'bookDetail.isbn',
+                'bookDetail.title',
+                'bookDetail.description',
+                'user.name',
+            ])
+            .orderBy('borrowed_history.return_date', 'DESC')
             .getMany();
     };
 
     getOverdueBooksByUser = async (userId: number) => {
         const currentDate = new Date();
         return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowedHistory')
-            .where('borrowedHistory.userId = :userId', { userId })
-            .andWhere('borrowedHistory.dueDate < :currentDate', { currentDate })
-            .andWhere('borrowedHistory.returnDate IS NULL')
+            .createQueryBuilder('borrowed_history')
+            .leftJoinAndSelect('borrowed_history.book', 'book')
+            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
+            .leftJoinAndSelect('borrowed_history.user', 'user')
+            .where('borrowed_history.user_id = :userId', { userId })
+            .andWhere('borrowed_history.expected_return_date < :currentDate', { currentDate })
+            .andWhere('borrowed_history.return_date IS NULL')
+            .select([
+                'borrowed_history.id',
+                'borrowed_history.borrowed_at',
+                'borrowed_history.expected_return_date',
+                'book.id',
+                'bookDetail.isbn',
+                'bookDetail.title',
+                'bookDetail.description',
+                'user.name',
+            ])
+            .orderBy('borrowed_history.expected_return_date', 'ASC')
             .getMany();
     };
 }
