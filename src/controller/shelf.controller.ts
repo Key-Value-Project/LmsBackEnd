@@ -23,7 +23,7 @@ class ShelfController {
 
     public getAllShelfs = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
-            Permission.userPermission(req, [Role.ADMIN], ['You do not have permission']);
+            Permission.userPermission(req, [Role.ADMIN, Role.DEVELOPER, Role.HR, Role.TESTER, Role.UI, Role.UX], ['You do not have permission']);
             const shelfs = await this.shelfService.getAllShelves();
 
             res.json(shelfs);
