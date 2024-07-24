@@ -13,7 +13,7 @@ class ReviewController {
 
     constructor(private reviewService: ReviewService) {
         this.router = express.Router();
-        this.router.get('/:user', authorize, this.getReviewsByUserId);
+        this.router.get('/user/:id', authorize, this.getReviewsByUserId);
         this.router.get('/book/:isbn', authorize, this.getReviewsByBookId);
         this.router.get('/', authorize, this.getAllReviews);
         this.router.post('/', authorize, this.createReview);

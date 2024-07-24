@@ -19,7 +19,7 @@ class ReviewService {
     };
 
     getReviewsByUserId = async (userId: number) => {
-        const reviews = await this.reviewRepository.findAll({ employee: { id: userId } });
+        const reviews = await this.reviewRepository.findAll({ employee: { id: userId } }, ['bookDetail']);
         if (!reviews || reviews.length === 0) {
             throw new HttpException(404, 'Not found', ['Review not found']);
         }
@@ -27,16 +27,18 @@ class ReviewService {
     };
 
     getReviewsByBookId = async (isbn: number) => {
-        const reviews = await this.reviewRepository.findAll({ bookDetail: { isbn: isbn } });
+        const reviews = await this.reviewRepository.findAll({ bookDetail: { isbn: isbn } }, ['employee']);
         if (!reviews || reviews.length === 0) {
             throw new HttpException(404, 'Not found', ['Review not found']);
         }
 
-        const averageRating = await this.reviewRepository.averageRating(isbn);
+        const averageRatingOutOf10 = await this.reviewRepository.averageRating(isbn);
+        const averageRatingOutOf5 = averageRatingOutOf10 / 2;
 
         return {
             reviews,
-            averageRating,
+            averageRatingOutOf5,
+            averageRatingOutOf10,
         };
     };
 
