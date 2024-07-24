@@ -32,8 +32,8 @@ class ShelfService {
 
     updateShelf = async (id: string, shelf: UpdateShelfDto) => {
         const currentShelf = await this.shelfRepository.find({ id }, ['books']);
-        if (currentShelf.books.length > 0) {
-            throw new HttpException(400, 'Bad Request', ['Shelf has books']);
+        if (currentShelf.code === shelf.code && currentShelf.location === shelf.location) {
+            throw new HttpException(400, 'Bad Request', ['No changes made']);
         }
         const newshelf = new Shelf();
         newshelf.code = shelf.code;
