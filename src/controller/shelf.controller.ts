@@ -15,6 +15,7 @@ class ShelfController {
 
     constructor(private shelfService: ShelfService) {
         this.router = express.Router();
+        this.router.get('/:id', authorize, this.getShelfById);
         this.router.get('/', authorize, this.getAllShelfs);
         this.router.post('/create', authorize, this.createShelf);
         this.router.put('/update/:id', authorize, this.updateShelf);
@@ -25,8 +26,17 @@ class ShelfController {
         try {
             Permission.userPermission(req, [Role.ADMIN, Role.DEVELOPER, Role.HR, Role.TESTER, Role.UI, Role.UX], ['You do not have permission']);
             const shelfs = await this.shelfService.getAllShelves();
-
             res.json(shelfs);
+        } catch (err) {
+            next(err);
+        }
+    };
+
+    public getShelfById = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+        try {
+            Permission.userPermission(req, [Role.ADMIN, Role.DEVELOPER, Role.HR, Role.TESTER, Role.UI, Role.UX], ['You do not have permission']);
+            const shelf = await this.shelfService.getShelfById(req.params.id);
+            res.json(shelf);
         } catch (err) {
             next(err);
         }

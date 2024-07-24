@@ -6,9 +6,9 @@ import { CreateShelfDto, UpdateShelfDto } from '../dto/shelf.dto';
 class ShelfService {
     constructor(private shelfRepository: ShelfRepository) {}
 
-    getAllShelves = async () => await this.shelfRepository.findAll();
+    getAllShelves = async () => await this.shelfRepository.findAll({}, ['books']);
 
-    getShelfById = async (id: string) => await this.shelfRepository.find({ id });
+    getShelfById = async (id: string) => await this.shelfRepository.find({ id }, ['books', 'books.bookDetail']);
 
     getShelfByCode = async (code: string) => await this.shelfRepository.find({ code });
 
