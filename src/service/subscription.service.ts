@@ -3,7 +3,7 @@ import Subscription from '../entity/subscription.entity';
 import BookRepository from '../repository/books.repository';
 import SubscriptionRepository from '../repository/subscription.repository';
 import BookService from './book.service';
-import BookDetailsService from './book_details.service';
+import BookDetailsService from './bookDetails.service';
 import BorrowedHistoryService from './borrowedHistory.service';
 import EmployeeService from './employee.service';
 
@@ -55,19 +55,14 @@ class SubscriptionService {
     };
 
     getMessageRequests = async (user_id: number) => {
-        let borrowedBooks = await this.borrowedHistoryService.findAllBooksBorrowedByUser(Number(user_id));
-        let messageRequest;
+        let borrowedBooks = await this.borrowedHistoryService.findAllBooksBorrowedByUser(Number(user_id), ['book.bookDetail']);
+        let isbns = borrowedBooks.map((borrowedBook) => borrowedBook.book.bookDetail.isbn);
         let messageRequests = [];
-        let bookId: string;
-        for (let borrowedBook of borrowedBooks) {
-            bookId = borrowedBook.book.id;
-            let borrowedBookDetails = await this.bookService.getBookDetailsById(bookId);
-            const isbn = borrowedBookDetails.isbn;
-            messageRequest = await this.subscriptionRepository.findAll({
-                bookDetail: { isbn: isbn },
-                sent_request: true,
-            });
-            messageRequests.push(messageRequest);
+        let messageRequest: Subscription[];
+        for (let isbn of isbns) {
+            messageRequest = await this.subscriptionRepository.findAll({ bookDetail: { isbn: isbn }, sent_request: true });
+            console.log(messageRequest);
+            if (messageRequest.length) messageRequests.push(...messageRequest);
         }
         return messageRequests;
     };

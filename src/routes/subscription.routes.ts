@@ -15,7 +15,7 @@ import EmployeeRepository from '../repository/employee.repository';
 import ShelfRepository from '../repository/shelf.repository';
 import SubscriptionRepository from '../repository/subscription.repository';
 import BookService from '../service/book.service';
-import BookDetailsService from '../service/book_details.service';
+import BookDetailsService from '../service/bookDetails.service';
 import BorrowedHistoryService from '../service/borrowedHistory.service';
 import DepartmentService from '../service/department.service';
 import EmployeeService from '../service/employee.service';

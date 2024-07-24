@@ -19,12 +19,11 @@ class SubscriptionRepository {
             where: filter,
             relations: ['user', 'bookDetail'],
         });
-        console.log(result);
         return result;
     };
 
     find = async (filter: Partial<Subscription>): Promise<Subscription | null> => {
-        return this.subscriptionRepository.findOne({
+        return await this.subscriptionRepository.findOne({
             where: filter,
             relations: ['user', 'bookDetail'],
         });

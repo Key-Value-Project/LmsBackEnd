@@ -56,8 +56,8 @@ class SubscriptionController {
         let newMessage: string;
         const allData = await this.subscriptionService.getMessageRequests(user_id);
         for (let data of allData) {
-            userName = data[0].user.name;
-            book = data[0].bookDetail.title;
+            userName = data.user.name;
+            book = data.bookDetail.title;
 
             newMessage = `You have a return request from ${userName} for book ${book}`;
             messages.push(newMessage);
