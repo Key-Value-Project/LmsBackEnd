@@ -24,7 +24,7 @@ class SubscriptionService {
 
         subscription.bookDetail = bookDetail;
         subscription.user = employee;
-        subscription.sent_request = false;
+        subscription.sent_request = sent_request;
         const addSubscription = await this.subscriptionRepository.subscribe(subscription);
         return addSubscription;
     };
@@ -73,6 +73,7 @@ class SubscriptionService {
             messageRequest = await this.subscriptionRepository.findAll({ bookDetail: { isbn: isbn }, sent_request: true });
             if (messageRequest.length) messageRequests.push(...messageRequest);
         }
+        console.log(messageRequest);
         return messageRequests;
     };
 }

@@ -11,7 +11,7 @@ class SubscriptionController {
         this.router.patch('/', authorize, this.toggleNotify);
         this.router.get('/', authorize, this.getSubscribedBookStatus);
         this.router.get('/subscriptions', authorize, this.getSubscriptions);
-        this.router.get('/issubscribed', authorize, this.isUserSubscribed);
+        this.router.post('/issubscribed', authorize, this.isUserSubscribed);
         this.router.get('/messages', authorize, this.getMessageRequests);
     }
 
@@ -34,9 +34,9 @@ class SubscriptionController {
         const user_id = req.id;
         const data = await this.subscriptionService.isUserSubscribed(isbn, user_id);
         if (data === null) {
-            res.status(400).send('not subscribed');
+            res.status(400).json('not subscribed');
         } else {
-            res.status(200).send(data);
+            res.status(200).json('subscribed');
         }
     };
 
@@ -49,20 +49,21 @@ class SubscriptionController {
 
     getSubscriptions = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         const data = await this.subscriptionService.getSubscriptions(req.id);
+
         res.status(200).send(data);
     };
 
     getSubscribedBookStatus = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         const user_id = req.id;
         const data = await this.subscriptionService.getSubscribedBookStatus(user_id);
-        let message: string;
+        let message;
 
         let bookNames = data.map((data) => data.bookDetail.title);
         bookNames = [...new Set(bookNames)];
         if (bookNames.length == 0) {
             res.status(404).send('no active subscriptions');
         } else {
-            message = `${bookNames} available now`;
+            message = [`${bookNames} available now`];
 
             res.status(200).json({ message: message });
         }
@@ -85,6 +86,7 @@ class SubscriptionController {
                 newMessage = `You have a return request from ${userName} for book ${book}`;
                 messages.push(newMessage);
             }
+            messages = [...new Set(messages)];
             res.status(200).json({ message: messages });
         }
     };
