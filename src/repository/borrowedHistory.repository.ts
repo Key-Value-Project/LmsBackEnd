@@ -29,7 +29,7 @@ class BorrowedHistoryRepository {
             .createQueryBuilder('borrowed_history')
             .leftJoin('borrowed_history.book', 'book')
             .leftJoin('book.bookDetail', 'bookDetail')
-            .select('bookDetail.genre_id', 'genre_id')
+            .select(['bookDetail.genre_id', 'genre_id', 'genre.name'])
             .addSelect('COUNT(bookDetail.genre_id)', 'genre_count')
             .groupBy('bookDetail.genre_id')
             .orderBy('genre_count', 'DESC')
@@ -39,9 +39,11 @@ class BorrowedHistoryRepository {
     getUserActivity = async () => {
         return this.borrowedHistoryRepository
             .createQueryBuilder('borrowedHistory')
-            .select('borrowedHistory.user_id', 'user_id')
+            .leftJoin('borrowedHistory.user', 'user')
+            .select(['borrowedHistory.user_id', 'user_id', 'user.name'])
             .addSelect('COUNT(borrowedHistory.user_id)', 'activityCount')
             .groupBy('borrowedHistory.user_id')
+            .addGroupBy('user.name')
             .orderBy('COUNT(borrowedHistory.user_id)', 'DESC')
             .getRawMany();
     };
