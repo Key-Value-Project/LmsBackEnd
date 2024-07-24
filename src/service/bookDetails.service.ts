@@ -2,9 +2,17 @@ import { ILike } from 'typeorm';
 import BookDetailRepository from '../repository/bookDetail.repository';
 import BookDetail from '../entity/bookDetail.entity';
 import { CreateBookDetailDto } from '../dto/bookDetail.dto';
+import GenreService from './genre.service';
+import { Genre } from '../utils/genre.enum';
+import CapitalizeWords from '../utils/capitalizeWords';
+import { CreateGenreDto } from '../dto/genre.dto';
+import HttpException from '../execptions/http.exceptions';
 
 class BookDetailsService {
-    constructor(private bookDetailRepository: BookDetailRepository) {}
+    constructor(
+        private bookDetailRepository: BookDetailRepository,
+        private genreService: GenreService
+    ) {}
 
     getAllBookDetails = async () => {
         const bookdetails = await this.bookDetailRepository.findAll({}, ['books']);
@@ -45,7 +53,20 @@ class BookDetailsService {
         newbookDetail.isbn = book.isbn;
         if (book.author) newbookDetail.author = book.author;
         if (book.title) newbookDetail.title = book.title;
+        if (book.genre) {
+            const name = CapitalizeWords(book.genre);
+            const genre = await this.genreService.getGenreByName(name);
+            if (!genre) {
+                const genreDto = new CreateGenreDto();
+                genreDto.name = CapitalizeWords(book.genre);
+                const genre = await this.genreService.createGenre(genreDto);
+                newbookDetail.genre = genre;
+            } else newbookDetail.genre = genre;
+        } else {
+            throw new HttpException(400, 'Genre is required');
+        }
         if (book.description) newbookDetail.description = book.description;
+
         return this.bookDetailRepository.save(newbookDetail);
     };
 }

@@ -1,21 +1,22 @@
 import express from 'express';
 import AnalyticsService from '../service/analytics.service';
 import { Request, Response, NextFunction } from 'express';
+import authorize from '../middleware/auth.middleware';
 
 class AnalyticsController {
     public router: express.Router;
 
     constructor(private analyticsService: AnalyticsService) {
         this.router = express.Router();
-        this.router.get('/most-borrowed-books', this.getMostBorrowedBooks);
-        this.router.get('/popular-genres', this.getPopularGenres);
-        this.router.get('/user-activity', this.getUserActivity);
-        this.router.get('/borrowing-report', this.getBorrowingReport);
-        this.router.get('/return-report', this.getReturnReport);
-        this.router.get('/overdue-books-report', this.getOverdueBooksReport);
-        this.router.get('/borrowed-books/:userId', this.getBorrowedBooksByUser);
-        this.router.get('/returned-books/:userId', this.getReturnedBooksByUser);
-        this.router.get('/overdue-books/:userId', this.getOverdueBooksByUser);
+        this.router.get('/most-borrowed-books', authorize, this.getMostBorrowedBooks);
+        this.router.get('/popular-genres', authorize, this.getPopularGenres);
+        this.router.get('/user-activity', authorize, this.getUserActivity);
+        this.router.get('/borrowing-report', authorize, this.getBorrowingReport);
+        this.router.get('/return-report', authorize, this.getReturnReport);
+        this.router.get('/overdue-books-report', authorize, this.getOverdueBooksReport);
+        this.router.get('/borrowed-books/:userId', authorize, this.getBorrowedBooksByUser);
+        this.router.get('/returned-books/:userId', authorize, this.getReturnedBooksByUser);
+        this.router.get('/overdue-books/:userId', authorize, this.getOverdueBooksByUser);
     }
 
     public getMostBorrowedBooks = async (req: Request, res: Response, next: NextFunction) => {

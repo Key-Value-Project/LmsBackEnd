@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
 import { IsNumberLengthBetween } from '../utils/isbnValidator';
+import { Genre } from '../utils/genre.enum';
 
 export class CreateBookDetailDto {
     @IsNumber()
@@ -17,6 +18,10 @@ export class CreateBookDetailDto {
     @IsString()
     @IsNotEmpty()
     description: string;
+
+    @IsEnum(Genre)
+    @IsNotEmpty()
+    genre: Genre;
 }
 
 export class UpdateBookDetailDto {

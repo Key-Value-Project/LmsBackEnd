@@ -1,9 +1,10 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import Book from './book.entity';
 import Subscription from './subscription.entity';
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Genre } from '../utils/genre.enum';
 import Review from './reviews.entity';
+import { GenreDB } from './genre.entity';
 
 @Entity()
 class BookDetail {
@@ -35,9 +36,8 @@ class BookDetail {
     @OneToMany(() => Book, (book) => book.bookDetail)
     books: Book[];
 
-    @IsNotEmpty()
-    @IsEnum(Genre)
-    genre: Genre; // Genre is an enum BUT it should be an ENTITY in the database with CRUD operations
+    @ManyToOne(() => GenreDB, { eager: true })
+    genre: GenreDB;
 
     @IsNotEmpty()
     @IsNumber()

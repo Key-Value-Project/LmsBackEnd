@@ -12,11 +12,12 @@ class BorrowedHistoryRepository {
 
     getMostBorrowedBooks = async () => {
         return this.borrowedHistoryRepository
-            .createQueryBuilder('borrowedHistory')
-            .select('borrowedHistory.bookId', 'bookId')
-            .addSelect('COUNT(borrowedHistory.bookId)', 'borrowCount')
-            .groupBy('borrowedHistory.bookId')
-            .orderBy('borrowCount', 'DESC')
+            .createQueryBuilder('borrowed_history')
+            .select('borrowed_history.book_id', 'book_id')
+            .addSelect('COUNT(borrowed_history.book_id)', 'borrowCount')
+            .where('borrowed_history.deleted_at IS NULL')
+            .groupBy('borrowed_history.book_id')
+            .orderBy('COUNT(borrowed_history.book_id)', 'DESC')
             .limit(10)
             .getRawMany();
     };
@@ -26,9 +27,9 @@ class BorrowedHistoryRepository {
             .createQueryBuilder('borrowedHistory')
             .leftJoinAndSelect('borrowedHistory.book', 'book')
             .leftJoinAndSelect('book.bookDetail', 'bookDetail')
-            .select('bookDetail.genre', 'genre')
-            .addSelect('COUNT(bookDetail.genre)', 'genreCount')
-            .groupBy('bookDetail.genre')
+            .select('bookDetail.genreId', 'genreId')
+            .addSelect('COUNT(bookDetail.genreId)', 'genreCount')
+            .groupBy('bookDetail.genreId')
             .orderBy('genreCount', 'DESC')
             .getRawMany();
     };

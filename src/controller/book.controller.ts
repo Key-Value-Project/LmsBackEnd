@@ -28,6 +28,7 @@ class BooksController {
 
     public uploadFile = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
+            Permission.userPermission(req, [Role.HR, Role.ADMIN], ['You are not authorized to upload books']);
             if (!req.file) {
                 throw new HttpException(400, 'No file uploaded', ['Please upload a file']);
             }

@@ -71,6 +71,9 @@ class BookDetailController {
             const bookDetails = await this.bookDetailsService.createBookDetail(bookDetailsDto);
             response.send(bookDetails);
         } catch (err) {
+            if (err.code === '23505') {
+                return next(new HttpException(400, 'ISBN already exists', ['Book already exists']));
+            }
             next(err);
         }
     };
