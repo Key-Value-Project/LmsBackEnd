@@ -33,7 +33,6 @@ class BorrowedHistoryService {
 
     findAllBooksBorrowedByUser = async (user_id: number, relationArray) => {
         let res = await this.borrowedHistoryRepository.findAll({ user: { id: user_id }, return_date: IsNull() }, relationArray);
-        console.log('from borrow', res);
         return res;
     };
 }
