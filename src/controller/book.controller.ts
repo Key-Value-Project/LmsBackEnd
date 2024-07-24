@@ -27,8 +27,9 @@ class BooksController {
         this.router.delete('/delete/:id', authorize, this.deleteBook);
     }
 
-    uploadFile = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public uploadFile = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
+            Permission.userPermission(req, [Role.HR, Role.ADMIN], ['You are not authorized to upload books']);
             if (!req.file) {
                 throw new HttpException(400, 'No file uploaded', ['Please upload a file']);
             }
@@ -40,7 +41,7 @@ class BooksController {
         }
     };
 
-    borrowBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public borrowBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
             Permission.userPermission(req, [Role.ADMIN, Role.HR, Role.TESTER, Role.DEVELOPER, Role.UI, Role.UX], ['You do not have permission']);
             const { isbn, shelf_id } = req.body;
@@ -58,7 +59,7 @@ class BooksController {
         }
     };
 
-    returnBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public returnBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
             Permission.userPermission(req, [Role.ADMIN, Role.HR, Role.TESTER, Role.DEVELOPER, Role.UI, Role.UX], ['You do not have permission']);
             const { isbn, shelf_id } = req.body;
@@ -76,7 +77,7 @@ class BooksController {
         }
     };
 
-    getBorrowHistory = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public getBorrowHistory = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
             Permission.userPermission(req, [Role.ADMIN, Role.HR, Role.TESTER, Role.DEVELOPER, Role.UI, Role.UX], ['You do not have permission']);
             const user_id = req.id;
@@ -87,13 +88,13 @@ class BooksController {
         }
     };
 
-    getAllBooks = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+    public getAllBooks = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         Permission.userPermission(req, [Role.ADMIN, Role.HR, Role.TESTER, Role.DEVELOPER, Role.UI, Role.UX], ['You do not have permission']);
         const data = await this.bookService.getAllBooks();
         res.json(data);
     };
 
-    createBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+    public createBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
             Permission.userPermission(request, [Role.HR, Role.ADMIN], ['You are not authorized to create books']);
             const bookDto = plainToInstance(CreateBookDto, request.body);
@@ -114,7 +115,7 @@ class BooksController {
         }
     };
 
-    deleteBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
+    public deleteBook = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
             Permission.userPermission(request, [Role.HR, Role.ADMIN], ['You are not authorized to delete books']);
             const id = request.params.id;
