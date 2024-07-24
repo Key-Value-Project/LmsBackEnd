@@ -49,7 +49,7 @@ class BookDetailController {
 
     public searchBookDetailsWithTitle = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
-            // console.log('in searchBook details with title');
+            Permission.userPermission(request, [Role.ADMIN, Role.DEVELOPER, Role.HR, Role.TESTER, Role.UI, Role.UX], ['You do not have permission']);
             const { title } = request.params;
             const bookDetails = await this.bookDetailsService.getSearchBookDetailsWithTitle(title);
             if (!bookDetails) {
