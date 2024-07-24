@@ -38,6 +38,14 @@ class SubscriptionService {
         return data;
     };
 
+    isUserSubscribed = async (isbn: number, user_id: number) => {
+        const subscription = await this.subscriptionRepository.find({
+            bookDetail: { isbn: isbn },
+            user: { id: user_id },
+        });
+        return subscription;
+    };
+
     toggleNotification = async (isbn: number, user_id: number) => {
         const subscription = await this.subscriptionRepository.toggleNotify(isbn, user_id);
         return subscription;
