@@ -12,7 +12,6 @@ import analyticsRouter from './routes/analytics.routes';
 import reviewsRouter from './routes/reviews.routes';
 import subscriptionRouter from './routes/subscription.routes';
 
-
 const server = express();
 server.use(loggerMiddleware);
 server.use(express.json());
