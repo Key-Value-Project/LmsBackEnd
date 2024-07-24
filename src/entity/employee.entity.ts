@@ -6,6 +6,7 @@ import { deprecate } from 'util';
 import Department from './department.entity';
 import Subscription from './subscription.entity';
 import BorrowedHistory from './borrowedHistory.entity';
+import Review from './reviews.entity';
 
 @Entity()
 class Employee extends AbstractEntity {
@@ -42,6 +43,9 @@ class Employee extends AbstractEntity {
 
     @OneToMany(() => BorrowedHistory, (borrowedHistory) => borrowedHistory.user)
     borrowedHistory: BorrowedHistory[];
+
+    @OneToMany(() => Review, (review) => review.employee)
+    reviews: Review[];
 }
 
 export default Employee;

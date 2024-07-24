@@ -37,7 +37,7 @@ class BookDetailController {
         try {
             Permission.userPermission(request, [Role.ADMIN, Role.DEVELOPER, Role.HR, Role.TESTER, Role.UI, Role.UX], ['You do not have permission']);
             const { isbn } = request.params;
-            const bookDetails = await this.bookDetailsService.getAllBookDetailsWithBookId(isbn);
+            const bookDetails = await this.bookDetailsService.getAllBookDetailsWithBookId(Number(isbn));
             if (!bookDetails || bookDetails.length === 0) {
                 return next(new HttpException(404, 'Book not found'));
             }
@@ -73,6 +73,9 @@ class BookDetailController {
             const bookDetails = await this.bookDetailsService.createBookDetail(bookDetailsDto);
             response.send(bookDetails);
         } catch (err) {
+            if (err.code === '23505') {
+                return next(new HttpException(400, 'ISBN already exists', ['Book already exists']));
+            }
             next(err);
         }
     };

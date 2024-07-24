@@ -74,7 +74,6 @@ class ShelfController {
     public updateShelf = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
             Permission.userPermission(request, [Role.ADMIN], ['You do not have permission']);
-
             const id = request.params.id;
             const shelfDto = plainToInstance(UpdateShelfDto, request.body);
             const errors = await validate(shelfDto);

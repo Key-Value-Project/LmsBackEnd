@@ -8,6 +8,8 @@ import cors from 'cors';
 import bookDetailRouter from './routes/bookDetail.routes';
 import booksRouter from './routes/books.routes';
 import ShelfRouter from './routes/shelf.routes';
+import analyticsRouter from './routes/analytics.routes';
+import reviewsRouter from './routes/reviews.routes';
 import subscriptionRouter from './routes/subscription.routes';
 
 const server = express();
@@ -26,6 +28,8 @@ server.use('/book-details', bookDetailRouter);
 server.use('/books', booksRouter);
 server.use('/notify', subscriptionRouter);
 server.use('/shelf', ShelfRouter);
+server.use('/analytics', analyticsRouter);
+server.use('/reviews', reviewsRouter);
 
 server.get('/', (req, res) => {
     res.send('Hello World');
