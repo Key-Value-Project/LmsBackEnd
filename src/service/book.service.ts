@@ -242,5 +242,11 @@ class BookService {
         }
         return this.bookRepository.update(id, newBook);
     };
+
+    getBookDetailsById = async (id: string) => {
+        const { bookDetail } = await this.bookRepository.find({ id: id }, ['bookDetail']);
+        // console.log(bookDetail);
+        return bookDetail;
+    };
 }
 export default BookService;

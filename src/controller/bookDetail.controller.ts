@@ -22,6 +22,7 @@ class BookDetailController {
 
     public getAllBookDetails = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
+            Permission.userPermission(request, [Role.ADMIN, Role.DEVELOPER, Role.HR, Role.TESTER, Role.UI, Role.UX], ['You do not have permission']);
             const bookDetails = await this.bookDetailsService.getAllBookDetails();
             if (!bookDetails || bookDetails.length === 0) {
                 return next(new HttpException(404, 'Books not found'));
@@ -34,6 +35,7 @@ class BookDetailController {
 
     public getBookLocationWithBookIsbn = async (request: RequestWithUser, response: express.Response, next: express.NextFunction) => {
         try {
+            Permission.userPermission(request, [Role.ADMIN, Role.DEVELOPER, Role.HR, Role.TESTER, Role.UI, Role.UX], ['You do not have permission']);
             const { isbn } = request.params;
             const bookDetails = await this.bookDetailsService.getAllBookDetailsWithBookId(Number(isbn));
             if (!bookDetails || bookDetails.length === 0) {

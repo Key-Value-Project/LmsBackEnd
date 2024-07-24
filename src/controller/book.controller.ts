@@ -10,6 +10,7 @@ import HttpException from '../execptions/http.exceptions';
 import extractValidationErrors from '../utils/extractValidationErrors';
 import { validate } from 'class-validator';
 import upload from '../utils/fileUpload';
+import { permission } from 'process';
 
 class BooksController {
     public router: express.Router;
@@ -42,6 +43,7 @@ class BooksController {
 
     public borrowBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
+            Permission.userPermission(req, [Role.ADMIN, Role.HR, Role.TESTER, Role.DEVELOPER, Role.UI, Role.UX], ['You do not have permission']);
             const { isbn, shelf_id } = req.body;
             const user_id = req.id;
             const borrowBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
@@ -59,6 +61,7 @@ class BooksController {
 
     public returnBook = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
+            Permission.userPermission(req, [Role.ADMIN, Role.HR, Role.TESTER, Role.DEVELOPER, Role.UI, Role.UX], ['You do not have permission']);
             const { isbn, shelf_id } = req.body;
             const user_id = req.id;
             const returnBookDto = plainToInstance(BorrowBookDto, { isbn, shelf_id, user_id });
@@ -76,6 +79,7 @@ class BooksController {
 
     public getBorrowHistory = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
         try {
+            Permission.userPermission(req, [Role.ADMIN, Role.HR, Role.TESTER, Role.DEVELOPER, Role.UI, Role.UX], ['You do not have permission']);
             const user_id = req.id;
             const data = await this.bookService.getBorrowedBooks(user_id);
             res.json(data);
@@ -85,6 +89,7 @@ class BooksController {
     };
 
     public getAllBooks = async (req: RequestWithUser, res: express.Response, next: express.NextFunction) => {
+        Permission.userPermission(req, [Role.ADMIN, Role.HR, Role.TESTER, Role.DEVELOPER, Role.UI, Role.UX], ['You do not have permission']);
         const data = await this.bookService.getAllBooks();
         res.json(data);
     };
