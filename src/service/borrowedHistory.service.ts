@@ -31,8 +31,10 @@ class BorrowedHistoryService {
             returnShelf: shelf,
         });
 
-    findAllBooksBorrowedByUser = async (user_id: number, relationArray) =>
-        this.borrowedHistoryRepository.findAll({ user: { id: user_id }, return_date: null }, relationArray);
+    findAllBooksBorrowedByUser = async (user_id: number, relationArray) => {
+        let res = await this.borrowedHistoryRepository.findAll({ user: { id: user_id }, return_date: IsNull() }, relationArray);
+        return res;
+    };
 }
 
 export default BorrowedHistoryService;
