@@ -27,11 +27,13 @@ class BorrowedHistoryRepository {
     getPopularGenres = async () => {
         return this.borrowedHistoryRepository
             .createQueryBuilder('borrowed_history')
-            .leftJoin('borrowed_history.book', 'book')
-            .leftJoin('book.bookDetail', 'bookDetail')
-            .select(['bookDetail.genre_id', 'genre_id', 'genre.name'])
+            .leftJoinAndSelect('borrowed_history.book', 'book')
+            .leftJoinAndSelect('book.bookDetail', 'bookDetail')
+            .leftJoinAndSelect('bookDetail.genre', 'genre')
+            .select(['genre.id', 'genre.name'])
             .addSelect('COUNT(bookDetail.genre_id)', 'genre_count')
-            .groupBy('bookDetail.genre_id')
+            .groupBy('genre.id')
+            .addGroupBy('genre.name')
             .orderBy('genre_count', 'DESC')
             .getRawMany();
     };
