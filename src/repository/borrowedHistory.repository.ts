@@ -104,7 +104,7 @@ class BorrowedHistoryRepository {
             .select([
                 'borrowed_history.id',
                 'borrowed_history.borrowed_at',
-                'borrowed_history.expected_return_date',eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoic2hhaGVlbiIsImVtYWlsIjoic2hhaGVlbkBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpZCI6MSwiaWF0IjoxNzIxNzk5NjYzLCJleHAiOjE3MjE4ODYwNjN9.-zI655FEfXqFmWtskiHLPwzW6k6011I1PISYs4vCYYw
+                'borrowed_history.expected_return_date',
                 'book.id',
                 'bookDetail.isbn',
                 'bookDetail.title',
